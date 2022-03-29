@@ -14,6 +14,6 @@ THIRD_PARTY_APPS = [
 
 # created applications
 CREATED_APPS = [
-    'user.apps.UserConfig',
-    'trade.apps.TradeConfig',
+    'user',
+    'trade',
 ]

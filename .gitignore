@@ -363,3 +363,9 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,python,django,venv
+
+# migrations
+**/migrations/**
+!**/migrations
+!**/migrations/__init__.py
+
