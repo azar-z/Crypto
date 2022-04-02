@@ -1,0 +1,22 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} Sign up {% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="{% static 'user/styles/important_form.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div align="center">
+        <form method="post" align="left">
+            {% csrf_token %}
+            <legend>Sign Up Information:</legend>
+            <fieldset>
+                {{ form|crispy }}
+            </fieldset>
+            <input type="submit" value="Signup" class="btn btn-info">
+        </form>
+    </div>
+{% endblock %}

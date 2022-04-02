@@ -1,0 +1,14 @@
+form {
+    margin-top: 3%;
+    width: 50%;
+    border: solid 2px #bbbbbb;
+    padding: 20px;
+}
+
+.btn {
+    margin-top: 10px;
+}
+
+form input {
+    width: 100%;
+}

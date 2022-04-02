@@ -29,3 +29,6 @@ class UserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
+admin.site.register(Nobitex)
+admin.site.register(Wallex)
+admin.site.register(Exir)

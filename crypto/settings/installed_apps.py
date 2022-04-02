@@ -10,6 +10,9 @@ DEFAULT_APPS = [
 
 # installed third party applications
 THIRD_PARTY_APPS = [
+    'crispy_forms',
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 # created applications
