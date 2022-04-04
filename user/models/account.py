@@ -15,14 +15,15 @@ ACCOUNT_TYPE_CHOICES = (
 class Account(BaseModel):
     _was_default = False
     is_default = models.BooleanField(default=False)
-    owner = models.OneToOneField(User, on_delete=models.CASCADE, validators=[validators.validate_not_staff],
-                                 related_name='%(class)s_account')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, validators=[validators.validate_not_staff])
     type = models.CharField(max_length=1, choices=ACCOUNT_TYPE_CHOICES)
 
     def save(self, *args, **kwargs):
         if self.is_default and not self._was_default:
             self.set_as_default()
             self._was_default = True
+        if not self.is_default and self._was_default:
+            self._was_default = False
         super(Account, self).save(*args, **kwargs)
 
     @staticmethod
@@ -102,21 +103,11 @@ class Account(BaseModel):
         return timezone.now()
 
     def set_as_default(self):
-        account = self.owner.nobitex_account
-        if account is not self:
-            account.is_default = False
-            account._was_default = False
-            account.save()
-        account = self.owner.wallex_account
-        if account is not self:
-            account.is_default = False
-            account._was_default = False
-            account.save()
-        account = self.owner.exir_account
-        if account is not self:
-            account.is_default = False
-            account._was_default = False
-            account.save()
+        for account in self.owner.account_set.all():
+            if account is not self:
+                account.is_default = False
+                account._was_default = False
+                account.save()
         self.is_default = True
 
     def new_order(self, source, dest, amount, price):
@@ -140,8 +131,5 @@ class Account(BaseModel):
 
     def get_wallets(self):
         pass
-
-    class Meta:
-        abstract = True
 
 

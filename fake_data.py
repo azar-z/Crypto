@@ -84,17 +84,16 @@ def create_orders():
         i += 1
         while User.objects.get(id=i).is_staff:
             i += 1
-        create_fake_order(i, 'N')
-        create_fake_order(i, 'E')
-        create_fake_order(i, 'W')
+        user = User.objects.get(id=i)
+        for account in user.account_set.all():
+            create_fake_order(account)
 
 
-def create_fake_order(owner_id, account_type):
+def create_fake_order(account):
     order = Order.objects.create(
-        owner_id=owner_id,
-        account_type=account_type,
+        account=account,
         status=random.choice(ORDER_STATUS_CHOICES)[0],
-        order_account_id=random.randint(0, 2000),
+        order_id_in_account=random.randint(0, 2000),
         source_currency_type=random.choice(CURRENCIES)[0],
         dest_currency_type=random.choice(CURRENCIES)[0],
         source_currency_amount=random.randint(1, 20000),

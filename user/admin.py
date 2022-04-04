@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from trade.models import Order
-from user.models import User, Nobitex, Wallex, Exir
+from user.models import User, Nobitex, Wallex, Exir, Account
 
 
 class NobitexInline(admin.TabularInline):
@@ -23,8 +23,16 @@ class OrderInline(admin.TabularInline):
     model = Order
 
 
+class AccountInline(admin.TabularInline):
+    model = Account
+
+
+class OrdeInline(admin.TabularInline):
+    model = Order
+
+
 class UserAdmin(admin.ModelAdmin):
-    inlines = [NobitexInline, WallexInline, ExirInline, OrderInline]
+    inlines = [AccountInline, NobitexInline, WallexInline, ExirInline]
 
     fieldsets = (
         (None, {
@@ -33,8 +41,12 @@ class UserAdmin(admin.ModelAdmin):
     )
 
 
+class NobitexAdmin(admin.ModelAdmin):
+    inlines = [OrdeInline]
+
+
 admin.site.register(User, UserAdmin)
-admin.site.register(Nobitex)
+admin.site.register(Nobitex, NobitexAdmin)
 admin.site.register(Wallex)
 admin.site.register(Exir)
 admin.site.register(Order)

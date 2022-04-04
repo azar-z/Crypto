@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
 
-  backend:
+  web:
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,3 +11,30 @@ services:
       - .:/code
     ports:
       - '8000:8000'
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'celery -A crypto.celery worker --loglevel=info '
+    volumes:
+      - .:/code
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+
+
+  redis:
+    image: redis:6-alpine
+    restart: always
+    ports:
+      - '6379:6379'

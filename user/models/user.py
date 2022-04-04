@@ -9,6 +9,7 @@ from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 
 from user.producer import publish
+from user.tasks import send_email_task
 
 
 class User(AbstractUser, BaseModel):
@@ -24,8 +25,7 @@ class User(AbstractUser, BaseModel):
 
     def send_email_to_user(self, subject, html_template_name, context):
         msg_html = render_to_string(html_template_name, context)
-        email = EmailMessage(subject, msg_html, to=[self.email])
-        email.send()
+        send_email_task.delay(subject, msg_html, [self.email])
 
     def send_sms_to_user(self, text):
         data = {
