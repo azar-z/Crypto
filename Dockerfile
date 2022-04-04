@@ -1,10 +1,7 @@
-FROM python:3
+FROM python:3.9
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ADD . /crypto
-WORKDIR /crypto
-COPY requirements.txt /crypto/
-#why??
+WORKDIR /code
+COPY requirements.txt /code/
 RUN pip install -r requirements.txt
-COPY . /crypto/
-#why??
+COPY . /code/

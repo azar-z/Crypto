@@ -8,13 +8,13 @@ from user.models.base_model import BaseModel
 from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 
+from user.producer import publish
+
 
 class User(AbstractUser, BaseModel):
     phone_number = models.CharField(validators=[validators.phone_regex], max_length=17, default='9102164912')
     national_code = models.CharField(max_length=10, validators=[validators.national_code_regex], default='0123456789')
     address = models.CharField(max_length=300, null=True)
-    access_token = models.CharField(max_length=500)
-    refresh_token = models.CharField(max_length=500)
 
     # login and signup: inherited from parent
     # adding account: use model forms of accounts
@@ -26,6 +26,13 @@ class User(AbstractUser, BaseModel):
         msg_html = render_to_string(html_template_name, context)
         email = EmailMessage(subject, msg_html, to=[self.email])
         email.send()
+
+    def send_sms_to_user(self, text):
+        data = {
+            'receiver': str(self.phone_number),
+            'text': text
+        }
+        publish('send_sms', data)
 
     def get_transitions(self):
         pass
