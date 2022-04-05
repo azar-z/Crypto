@@ -1,11 +1,9 @@
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 import user.validators.user as validators
 from user.models.base_model import BaseModel
 
-from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 
 from user.producer import publish
@@ -29,7 +27,7 @@ class User(AbstractUser, BaseModel):
 
     def send_sms_to_user(self, text):
         data = {
-            'receiver': str(self.phone_number),
+            'receiver': self.phone_number,
             'text': text
         }
         publish('send_sms', data)

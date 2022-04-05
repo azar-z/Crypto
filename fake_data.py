@@ -2,16 +2,14 @@ import os
 import random
 
 import django
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crypto.settings')
 django.setup()
 
 from trade.models import Order
-from trade.models.order import ORDER_STATUS_CHOICES, CURRENCIES
-
-
-
+from trade.models.order import SOURCE_CURRENCIES, DEST_CURRENCIES
+from user.models.account import ACCOUNT_TYPE_CHOICES
 from faker import Faker
-
 from user.models import User, Nobitex, Wallex, Exir
 
 NUM_OF_USERS = 10
@@ -20,14 +18,18 @@ NUM_OF_USERS = 10
 def create_users():
     fake = Faker()
     for _ in range(NUM_OF_USERS):
+        fake_profile = fake.simple_profile()
+
         user = User.objects.create(
-            username=fake.name(),
+            username=fake_profile['username'],
+            password='1234',
+            email=fake_profile['mail'],
             national_code=fake.numerify("##########"),
             phone_number=fake.numerify("+##########"),
-            address=fake.address(),
-            email=fake.email()
+            address=fake_profile['address'],
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
         )
-        user.set_password("1234")
         user.save()
 
 
@@ -85,19 +87,29 @@ def create_orders():
         while User.objects.get(id=i).is_staff:
             i += 1
         user = User.objects.get(id=i)
-        for account in user.account_set.all():
-            create_fake_order(account)
+        j = random.randint(1, 5)
+        for _ in range(j):
+            create_fake_order(owner_id=user.id)
 
 
-def create_fake_order(account):
+def create_fake_order(owner_id):
+    fake = Faker()
     order = Order.objects.create(
-        account=account,
-        status=random.choice(ORDER_STATUS_CHOICES)[0],
-        order_id_in_account=random.randint(0, 2000),
-        source_currency_type=random.choice(CURRENCIES)[0],
-        dest_currency_type=random.choice(CURRENCIES)[0],
-        source_currency_amount=random.randint(1, 20000),
-        dest_currency_amount=random.randint(1, 20000)
+        owner_id=owner_id,
+        first_step_account_type=random.choice(ACCOUNT_TYPE_CHOICES)[0],
+        first_step_id_in_account=fake.pystr(max_chars=100),
+        source_currency_type=random.choice(SOURCE_CURRENCIES)[0],
+        dest_currency_type=random.choice(DEST_CURRENCIES)[0],
+        source_currency_amount=round(random.uniform(0.001, 1000.0), 3),
+        price=random.randint(1000, 1000000000),
+        is_sell=bool(random.getrandbits(1)),
+        profit_limit=random.uniform(0.00001, 1.0),
+        loss_limit=random.uniform(0.00001, 1.0),
+        got_to_profit_limit=bool(random.getrandbits(1)),
+        got_to_loss_limit=bool(random.getrandbits(1)),
+        second_step_account_type=random.choice(ACCOUNT_TYPE_CHOICES)[0],
+        second_step_id_in_account=fake.pystr(max_chars=100),
+
     )
     order.save()
 

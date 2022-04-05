@@ -15,10 +15,8 @@ class Nobitex(Account):
         pass  # throw login, set expire date
 
     @staticmethod
-    def get_raw_orderbook(source, dest, is_bids):
-        if dest == "IRR":
-            dest = Nobitex.get_toman_symbol()
-        url = 'https://api.nobitex.ir/v2/orderbook/' + source + dest
+    def get_raw_orderbook(market_symbol, is_bids):
+        url = 'https://api.nobitex.ir/v2/orderbook/' + market_symbol
         response = requests.get(url)
         order_book_type = 'asks'
         if is_bids:
@@ -26,10 +24,8 @@ class Nobitex(Account):
         return response.json()[order_book_type]
 
     @staticmethod
-    def get_raw_trades(source, dest, is_sell):
-        if dest == "IRR":
-            dest = Nobitex.get_toman_symbol()
-        url = 'https://api.nobitex.ir/v2/trades/' + source + dest
+    def get_raw_trades(market_symbol, is_sell):
+        url = 'https://api.nobitex.ir/v2/trades/' + market_symbol
         response = requests.get(url)
         all_trades = response.json()['trades']
         trade_type = 'buy'
@@ -60,3 +56,6 @@ class Nobitex(Account):
     @staticmethod
     def get_time_from_raw_trade(raw_trade):
         return datetime.datetime.utcfromtimestamp(int(raw_trade['time']))
+
+    def new_order(self, source, dest, amount, price, is_sell):
+        pass

@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import requests
 from django.db import models
@@ -13,17 +14,13 @@ class Wallex(Account):
     def get_token(self, email, password):
         pass  # throw user
 
-    # WebSocket?
-
     @staticmethod
     def get_toman_symbol():
         return 'TMN'
 
     @staticmethod
-    def get_raw_orderbook(source, dest, is_bids):
-        if dest == "IRR":
-            dest = Wallex.get_toman_symbol()
-        url = "https://api.wallex.ir/v1/depth?symbol=" + source + dest
+    def get_raw_orderbook(market_symbol, is_bids):
+        url = "https://api.wallex.ir/v1/depth?symbol=" + market_symbol
         response = requests.get(url)
         order_book_type = 'ask'
         if is_bids:
@@ -31,10 +28,8 @@ class Wallex(Account):
         return response.json()[order_book_type]
 
     @staticmethod
-    def get_raw_trades(source, dest, is_sell):
-        if dest == "IRR":
-            dest = Wallex.get_toman_symbol()
-        url = "https://api.wallex.ir/v1/trades?symbol=" + source + dest
+    def get_raw_trades(market_symbol, is_sell):
+        url = "https://api.wallex.ir/v1/trades?symbol=" + market_symbol
         response = requests.get(url)
         all_trades = response.json()['latestTrades']
         specific_type_trades = []
@@ -63,3 +58,23 @@ class Wallex(Account):
     def get_time_from_raw_trade(raw_trade):
         zulu_time = raw_trade['timestamp']
         return datetime.datetime.strptime(zulu_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+    def new_order(self, source, dest, amount, price, is_sell):
+        side = 'sell' if is_sell else 'buy'
+        market_symbol = self.get_market_symbol(source, dest)
+        payload = json.dumps({
+            "price": str(price),
+            "quantity": str(amount),
+            "side": "sell",
+            "symbol": self.get_market_symbol(source, dest),
+            "type": "market",
+        })
+        headers = {
+            'Authorization': 'Bearer ' + self.token,
+            'Content-Type': 'application/json'
+        }
+        url = "https://api.wallex.ir/v1/account/orders"
+        response = requests.post(url, headers=headers, data=payload)
+        if response.json()['success']:
+            return True
+        return False

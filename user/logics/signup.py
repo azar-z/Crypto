@@ -8,11 +8,10 @@ from user.models import User
 from user.tokens import account_activation_token
 
 
-def signup_logic(request, form):
+def signup_logic(current_site, form):
     user = form.save(commit=False)
     user.is_active = False
     user.save()
-    current_site = get_current_site(request)
     user.send_email_to_user('Activate your crypto account.',
                             'user/emails/activation.html',
                             {
@@ -22,19 +21,3 @@ def signup_logic(request, form):
                                 'token': account_activation_token.make_token(user),
                             }
                             )
-    messages.info(request, 'Please confirm your email address to complete the registration')
-
-
-def activate_logic(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-    if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.save()
-        login(request, user)
-        messages.success(request, 'Email confirmation was successful. Now you can login to your account.')
-    else:
-        messages.error(request, 'Activation link is invalid!')

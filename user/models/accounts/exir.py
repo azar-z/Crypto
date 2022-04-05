@@ -11,30 +11,28 @@ class Exir(Account):
     api_signature = models.CharField(max_length=200)
     api_expires = models.CharField(max_length=200)
 
-    @staticmethod
-    def get_raw_orderbook(source, dest, is_bids):
-        if dest == "IRR":
-            dest = Exir.get_toman_symbol()
+    @classmethod
+    def get_market_symbol(cls, source, dest):
+        if source == 'IRR':
+            source = cls.get_toman_symbol()
         source = source.lower()
         dest = dest.lower()
+        return source + "-" + dest
+
+    @classmethod
+    def get_orderbook(cls, market_symbol, is_bids):
         url = "https://api.exir.io/v1/orderbooks"
         response = requests.get(url)
-        market_name = source + "-" + dest
         order_book_type = 'asks'
         if is_bids:
             order_book_type = 'bids'
-        return response.json()[market_name][order_book_type]
+        return response.json()[market_symbol][order_book_type]
 
     @staticmethod
-    def get_raw_trades(source, dest, is_sell):
-        if dest == "IRR":
-            dest = Exir.get_toman_symbol()
-        source = source.lower()
-        dest = dest.lower()
+    def get_raw_trades(market_symbol, is_sell):
         url = "https://api.exir.io/v1/trades"
         response = requests.get(url)
-        market_name = source + "-" + dest
-        all_trades = response.json()[market_name]
+        all_trades = response.json()[market_symbol]
         trade_type = 'buy'
         if is_sell:
             trade_type = 'sell'
@@ -64,3 +62,6 @@ class Exir(Account):
     def get_time_from_raw_trade(raw_trade):
         zulu_time = raw_trade['timestamp']
         return datetime.datetime.strptime(zulu_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+    def new_order(self, source, dest, amount, price, is_sell):
+        pass
