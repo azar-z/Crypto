@@ -3,6 +3,7 @@ import json
 
 import requests
 from django.db import models
+from django.utils import timezone
 
 from user.models import Account
 
@@ -17,6 +18,13 @@ class Wallex(Account):
     @staticmethod
     def get_toman_symbol():
         return 'TMN'
+
+    @staticmethod
+    def get_currency_symbol(currency):
+        if currency == 'IRR':
+            return 'TMN'
+        else:
+            return currency
 
     @staticmethod
     def get_raw_orderbook(market_symbol, is_bids):
@@ -59,22 +67,49 @@ class Wallex(Account):
         zulu_time = raw_trade['timestamp']
         return datetime.datetime.strptime(zulu_time, '%Y-%m-%dT%H:%M:%S.%fZ')
 
+    def has_authentication_information(self):
+        return self.token_expire_time > timezone.now()
+
+    def get_authentication_headers(self):
+        if not self.has_authentication_information():
+            self.raise_authentication_expired_exception()
+        header = {
+            'Authorization': 'Bearer ' + self.token,
+        }
+        return header
+
     def new_order(self, source, dest, amount, price, is_sell):
         side = 'sell' if is_sell else 'buy'
         market_symbol = self.get_market_symbol(source, dest)
-        payload = json.dumps({
+        if source == 'IRR':
+            price = price / 10
+        data = json.dumps({
             "price": str(price),
             "quantity": str(amount),
-            "side": "sell",
-            "symbol": self.get_market_symbol(source, dest),
-            "type": "market",
+            "side": side,
+            "symbol": market_symbol,
+            "type": "limit",
         })
-        headers = {
-            'Authorization': 'Bearer ' + self.token,
-            'Content-Type': 'application/json'
-        }
+        headers = self.get_authentication_headers().update({
+            'Content-Type': 'application/json',
+        })
         url = "https://api.wallex.ir/v1/account/orders"
-        response = requests.post(url, headers=headers, data=payload)
-        if response.json()['success']:
-            return True
-        return False
+        response = requests.post(url, headers=headers, data=data)
+        response = response.json()
+        if response['success']:
+            return response['result']['clientOrderId']
+        return ""
+
+    def get_balance(self, currency):
+        url = "https://api.wallex.ir/v1/account/balances"
+        response = requests.get(url, headers=self.get_authentication_headers(), data="")
+        response = response.json()
+        if response['success']:
+            response = response['result']['balances'][self.get_currency_symbol(currency)]
+            total = float(response['value'])
+            locked = float(response['locked'])
+            balance = total - locked
+            if currency == 'IRR':
+                balance = balance * 10
+            return balance
+        return ""

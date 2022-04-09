@@ -1,7 +1,9 @@
+import datetime
 import os
 import random
 
 import django
+from django.utils import timezone
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crypto.settings')
 django.setup()
@@ -75,7 +77,8 @@ def create_exir_account():
             api_key=fake.pystr(max_chars=50),
             api_signature=fake.pystr(max_chars=50),
             api_expires=fake.pystr(max_chars=50),
-            owner_id=i
+            owner_id=i,
+            api_key_expire_time=datetime.timedelta(days=30) + timezone.now()
         )
         account.save()
 

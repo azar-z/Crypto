@@ -34,6 +34,10 @@ class Account(BaseModel):
     def get_toman_symbol():
         return 'IRT'
 
+    @staticmethod
+    def get_currency_symbol(currency):
+        pass
+
     @classmethod
     def get_market_symbol(cls, source, dest):
         if source == 'IRR':
@@ -131,27 +135,25 @@ class Account(BaseModel):
             account.save()
         self.is_default = True
 
+    @staticmethod
+    def raise_authentication_expired_exception():
+        raise Exception('No authentication information.')
+
+    def get_authentication_headers(self):
+        pass
+
     def new_order(self, source, dest, amount, price, is_sell):
         pass
 
-    def cancel_order(self, order):
-        pass
-
-    def get_inventory(self, currency):
-        pass
-
-    def logout(self):
+    def get_balance(self, currency):
         pass
 
     def has_authentication_information(self):
         pass
-        # boolean output
-
-    def get_authentication_information(self):
-        pass
 
     def get_wallets(self):
         pass
+        # usage??
 
     class Meta:
         abstract = True
