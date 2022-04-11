@@ -3,8 +3,8 @@ import json
 
 import requests
 from django.db import models
-from django.utils import timezone
 
+from trade.currencies import ALL_CURRENCIES
 from user.models import Account
 
 
@@ -12,7 +12,6 @@ class Exir(Account):
     api_key = models.CharField(max_length=200)
     api_signature = models.CharField(max_length=200)
     api_expires = models.CharField(max_length=200)
-    api_key_expire_time = models.DateTimeField()
 
     @staticmethod
     def get_currency_symbol(currency):
@@ -23,14 +22,14 @@ class Exir(Account):
 
     @classmethod
     def get_market_symbol(cls, source, dest):
-        if source == 'IRR':
-            source = cls.get_toman_symbol()
+        if dest == 'IRR':
+            dest = cls.get_toman_symbol()
         source = source.lower()
         dest = dest.lower()
         return source + "-" + dest
 
     @classmethod
-    def get_orderbook(cls, market_symbol, is_bids):
+    def get_raw_orderbook(cls, market_symbol, is_bids):
         url = "https://api.exir.io/v1/orderbooks"
         response = requests.get(url)
         order_book_type = 'asks'
@@ -58,7 +57,7 @@ class Exir(Account):
 
     @staticmethod
     def get_size_from_raw_order(raw_order):
-        return int(raw_order[1])
+        return float(raw_order[1])
 
     @staticmethod
     def get_toman_price_from_raw_trade(raw_trade):
@@ -74,7 +73,17 @@ class Exir(Account):
         return datetime.datetime.strptime(zulu_time, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     def has_authentication_information(self):
-        return self.api_key_expire_time > timezone.now()
+        url = "https://api.exir.io/v1/user"
+        headers = {
+            'api-expires': self.api_expires,
+            'api-signature': self.api_signature,
+            'api-key': self.api_key,
+        }
+        response = requests.get(url, headers=headers).json()
+        try:
+            return response['id'] != ""
+        except KeyError:
+            return False
 
     def get_authentication_headers(self):
         if not self.has_authentication_information():
@@ -113,3 +122,18 @@ class Exir(Account):
         if currency == 'IRR':
             balance = balance * 10
         return balance
+
+    def get_balance_of_all_currencies(self):
+        url = "https://api.exir.io/v1/user/balance"
+        response = requests.get(url, headers=self.get_authentication_headers())
+        response = response.json()
+        balance_of_all = []
+        for currency_tuple in ALL_CURRENCIES:
+            currency = currency_tuple[0]
+            symbol = self.get_currency_symbol(currency) + '_available'
+            balance = float(response[symbol])
+            if currency == 'IRR':
+                balance = balance * 10
+            if balance > 0.0:
+                balance_of_all.append((currency, balance))
+        return balance_of_all

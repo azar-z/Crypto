@@ -1,0 +1,48 @@
+<nav class="navbar navbar-dark navbar-expand-md">
+    <span class="navbar-brand mb-0 h1">Car Rental</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarItems"
+            area-controls="navbarItems" aria-expanded="false" area-lable="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarItems">
+        <ul class="navbar-nav">
+            {% with url_name=request.resolver_match.url_name %}
+                <li class="nav-item {% if url_name == 'home' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                {% if user.is_anonymous %}
+                    <li class="nav-item {% if url_name == 'login' %}active{% endif %}">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item {% if url_name == 'signup' %}active{% endif %}">
+                        <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Profile
+                        </a>
+                        <div class="dropdown-menu {% if url_name == 'user_panel' or url_name == 'accounts' %}active{% endif %}"
+                             aria-labelledby="profileDropdown">
+                            <a class="dropdown-item" href="{% url 'user_panel' %}">User Panel</a>
+                            <a class="dropdown-item" href="{% url 'accounts' 'N' %}">Accounts</a>
+                        </div>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="tradesDropdown" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Trades
+                        </a>
+                        <div class="dropdown-menu {% if url_name == 'new_trade' or url_name == 'accounts' %}active{% endif %}"
+                             aria-labelledby="tradesDropdown">
+                            <a class="dropdown-item" href="{% url 'new_trade' %}">New Trade</a>
+                        </div>
+                    </li>
+                {% endif %}
+                </ul>
+            {% endwith %}
+    </div>
+</nav>

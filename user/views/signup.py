@@ -42,10 +42,5 @@ def activate_view(request, uidb64, token):
     return redirect('home')
 
 
-def test_sms(request):
-    data = {
-        'receiver': '09102185915',
-        'text': 'test sms microservice',
-    }
-    publish('send_sms', data)
+def test(request):
     return HttpResponse('published')

@@ -1,0 +1,15 @@
+.account_detail {
+    margin-left: 30%;
+    padding: 1px 16px;
+    height: 1000px;
+}
+
+form {
+    width: 50%;
+    border: solid 2px #bbbbbb;
+    padding: 20px;    margin: 10px 0;
+}
+
+form input.btn{
+    margin: 10px 0;
+}

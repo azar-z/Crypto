@@ -1,18 +1,9 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+
+from trade.currencies import SOURCE_CURRENCIES, DEST_CURRENCIES
 from user.models import BaseModel, User
 from user.models.account import ACCOUNT_TYPE_CHOICES
-
-SOURCE_CURRENCIES = (
-    ('BTC', 'Bitcoin'),
-    ('BTH', 'Bitcoin Cash'),
-    ('ETH', 'Ethereum'),
-    ('ETC', 'Ethereum Classic'),
-    ('USDT', 'Tether'),
-)
-DEST_CURRENCIES = (
-    ('IRR', 'Iran Rial'),
-)
 
 ORDER_STATUS_CHOICES = (
     ('A', 'active'),

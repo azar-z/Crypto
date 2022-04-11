@@ -17,6 +17,8 @@ from django.contrib.messages import constants as messages
 from .installed_apps import *
 from .rest_framework import *
 from .email_settings import *
+from .redis import *
+from .celery_beat_tasks import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -119,6 +121,3 @@ MESSAGE_TAGS = {
         messages.WARNING: 'alert-warning',
         messages.ERROR: 'alert-danger',
  }
-
-CELERY_BROKER_URL = 'redis://redis:6379'
-CELERY_RESULT_BACKEND = 'redis://redis:6379'

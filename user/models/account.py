@@ -1,7 +1,10 @@
+from operator import itemgetter
+
 from django.db import models
 from django.utils import timezone
 
 import user.validators.account as validators
+from user.errors import NoAuthenticationInformation
 from user.models.base_model import BaseModel
 from user.models.user import User
 
@@ -11,24 +14,14 @@ ACCOUNT_TYPE_CHOICES = (
     ('E', "Exir"),
 )
 
+
 # source = BTC
 # dest = IRR
 
 
 class Account(BaseModel):
-    _was_default = False
-    is_default = models.BooleanField(default=False)
     owner = models.OneToOneField(User, on_delete=models.CASCADE, validators=[validators.validate_not_staff],
                                  related_name='%(class)s_account')
-    type = models.CharField(max_length=1, choices=ACCOUNT_TYPE_CHOICES)
-
-    def save(self, *args, **kwargs):
-        if self.is_default and not self._was_default:
-            self.set_as_default()
-            self._was_default = True
-        if not self.is_default and self._was_default:
-            self._was_default = False
-        super(Account, self).save(*args, **kwargs)
 
     @staticmethod
     def get_toman_symbol():
@@ -40,8 +33,8 @@ class Account(BaseModel):
 
     @classmethod
     def get_market_symbol(cls, source, dest):
-        if source == 'IRR':
-            source = cls.get_toman_symbol()
+        if dest == 'IRR':
+            dest = cls.get_toman_symbol()
         return source + dest
 
     @staticmethod
@@ -68,7 +61,7 @@ class Account(BaseModel):
         for subclass in Account.__subclasses__():
             market_symbol = subclass.get_market_symbol(source, dest)
             orders.extend(subclass.get_orderbook(market_symbol, is_bids))
-        orders.sort(reverse=True)
+        orders = sorted(orders, key=itemgetter('price'), reverse=True)
         return orders[:10]
 
     @staticmethod
@@ -88,17 +81,18 @@ class Account(BaseModel):
             if cls.get_toman_symbol() in market_symbol:
                 price *= 10
             size = cls.get_size_from_raw_trade(raw_trade)
-            time = cls.get_time_from_raw_trade(raw_trade)
+            # time = cls.get_time_from_raw_trade(raw_trade)
             market = cls.__name__
-            trades.append({"price": price, "size": size, "time": time, "market": market})
+            trades.append({"price": price, "size": size, "time": 'some time', "market": market})
         return trades
 
     @staticmethod
-    def get_trades_of_all(market_symbol, is_sell):
+    def get_trades_of_all(source, dest, is_sell):
         trades = []
         for subclass in Account.__subclasses__():
+            market_symbol = subclass.get_market_symbol(source, dest)
             trades.extend(subclass.get_trades(market_symbol, is_sell))
-        trades.sort(reverse=True)
+        trades = sorted(trades, key=itemgetter('price'), reverse=True)
         return trades[:10]
 
     @staticmethod
@@ -117,27 +111,9 @@ class Account(BaseModel):
     def get_time_from_raw_trade(raw_trade):
         return timezone.now()
 
-    def set_as_default(self):
-        account = self.owner.nobitex_account
-        if account is not self:
-            account.is_default = False
-            account._was_default = False
-            account.save()
-        account = self.owner.wallex_account
-        if account is not self:
-            account.is_default = False
-            account._was_default = False
-            account.save()
-        account = self.owner.exir_account
-        if account is not self:
-            account.is_default = False
-            account._was_default = False
-            account.save()
-        self.is_default = True
-
     @staticmethod
     def raise_authentication_expired_exception():
-        raise Exception('No authentication information.')
+        raise NoAuthenticationInformation('No authentication information.')
 
     def get_authentication_headers(self):
         pass
@@ -146,6 +122,9 @@ class Account(BaseModel):
         pass
 
     def get_balance(self, currency):
+        pass
+
+    def get_balance_of_all_currencies(self):
         pass
 
     def has_authentication_information(self):

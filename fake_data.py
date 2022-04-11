@@ -9,7 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crypto.settings')
 django.setup()
 
 from trade.models import Order
-from trade.models.order import SOURCE_CURRENCIES, DEST_CURRENCIES
+from trade.currencies import SOURCE_CURRENCIES, DEST_CURRENCIES
 from user.models.account import ACCOUNT_TYPE_CHOICES
 from faker import Faker
 from user.models import User, Nobitex, Wallex, Exir
@@ -24,7 +24,6 @@ def create_users():
 
         user = User.objects.create(
             username=fake_profile['username'],
-            password='1234',
             email=fake_profile['mail'],
             national_code=fake.numerify("##########"),
             phone_number=fake.numerify("+##########"),
@@ -32,6 +31,7 @@ def create_users():
             first_name=fake.first_name(),
             last_name=fake.last_name(),
         )
+        user.set_password('1234')
         user.save()
 
 

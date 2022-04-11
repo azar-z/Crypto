@@ -1,0 +1,51 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} Accounts {% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="{% static 'user/styles/accounts_navbar.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'user/styles/account_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    <ul class="account_list">
+        <li class="{% if active_tab == 'N' %}active{% endif %}"><a href="{% url 'accounts' 'N' %}">Nobitex</a></li>
+        <li class="{% if active_tab == 'W' %}active{% endif %}"><a href="{% url 'accounts' 'W' %}">Wallex</a></li>
+        <li class="{% if active_tab == 'E' %}active{% endif %}"><a href="{% url 'accounts' 'E' %}">Exir</a></li>
+    </ul>
+
+    <div class="account_detail">
+        <form action="" method="POST">
+            {% csrf_token %}
+            <legend>Account Information</legend>
+            {{ form|crispy }}
+            <input class="btn btn-info" type="submit" value="Update"/>
+        </form>
+        {% if error %}
+            <div class="alert alert-secondary" role="alert">
+                {{ error }}
+            </div>
+        {% else %}
+            <table class="table">
+                <thead class="thead-light">
+                <tr>
+                    <td>Currency</td>
+                    <td>Balance</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for balance in balances %}
+                    <tr>
+                        <td>{{ balance.0 }}</td>
+                        <td>{{ balance.1 }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+{% endblock %}

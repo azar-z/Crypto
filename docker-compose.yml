@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: 'celery -A crypto.celery worker --loglevel=info '
+    command: 'celery -A crypto.celery worker --loglevel=DEBUG'
     volumes:
       - .:/code
     environment:
@@ -31,6 +31,21 @@ services:
     depends_on:
       - web
       - redis
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'celery -A crypto.celery beat --loglevel=DEBUG'
+    volumes:
+      - .:/code
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+      - worker
 
 
   redis:
