@@ -10,13 +10,14 @@
 {% endblock %}
 
 {% block content %}
-    <form action="" method="POST" >
+    <form action="" method="POST">
         {% csrf_token %}
-        <legend>Account Information</legend>
+        <legend>Order a new trade</legend>
         {{ form|crispy }}
         <input class="btn btn-info" type="submit" value="Save Order"/>
     </form>
 
-    {{ orderbook_bids }}
+{% include 'user/includes/market_table.html' with sell=orderbook_bids buy=orderbook_asks title='Orderbook'%}
+{% include 'user/includes/market_table.html' with sell=trades_sell buy=trades_buy title='Trades' %}
 
 {% endblock %}

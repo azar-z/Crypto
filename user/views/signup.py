@@ -1,3 +1,4 @@
+import requests
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
@@ -43,4 +44,9 @@ def activate_view(request, uidb64, token):
 
 
 def test(request):
-    return HttpResponse('published')
+    headers = {
+        'Authorization': 'Token ' + request.user.nobitex_account.token
+    }
+    response = requests.post('https://api.nobitex.ir/users/wallets/list', headers=headers)
+    response = response.json()
+    return HttpResponse(response['wallets'][0]['depositAddress'])

@@ -1,7 +1,9 @@
 import datetime
 import json
+from operator import itemgetter
 
 import requests
+from django.core.cache import cache
 from django.db import models
 
 from trade.currencies import ALL_CURRENCIES
@@ -30,18 +32,18 @@ class Exir(Account):
 
     @classmethod
     def get_raw_orderbook(cls, market_symbol, is_bids):
-        url = "https://api.exir.io/v1/orderbooks"
-        response = requests.get(url)
+        cache_key = 'exir_orderbook'
+        response = cache.get(cache_key)
         order_book_type = 'asks'
         if is_bids:
             order_book_type = 'bids'
-        return response.json()[market_symbol][order_book_type]
+        return response[market_symbol][order_book_type]
 
     @staticmethod
     def get_raw_trades(market_symbol, is_sell):
-        url = "https://api.exir.io/v1/trades"
-        response = requests.get(url)
-        all_trades = response.json()[market_symbol]
+        cache_key = 'exir_tasks'
+        response = cache.get(cache_key)
+        all_trades = response[market_symbol]
         trade_type = 'buy'
         if is_sell:
             trade_type = 'sell'
@@ -124,9 +126,14 @@ class Exir(Account):
         return balance
 
     def get_balance_of_all_currencies(self):
-        url = "https://api.exir.io/v1/user/balance"
-        response = requests.get(url, headers=self.get_authentication_headers())
-        response = response.json()
+        cache_key = 'exir_balance_' + str(self.id)
+        if cache_key not in cache:
+            url = "https://api.exir.io/v1/user/balance"
+            response = requests.get(url, headers=self.get_authentication_headers())
+            response = response.json()
+            cache.set(cache_key, response, timeout=300)
+        else:
+            response = cache.get(cache_key)
         balance_of_all = []
         for currency_tuple in ALL_CURRENCIES:
             currency = currency_tuple[0]
@@ -137,3 +144,16 @@ class Exir(Account):
             if balance > 0.0:
                 balance_of_all.append((currency, balance))
         return balance_of_all
+
+    @classmethod
+    def get_market_info(cls, source, dest):
+        sells = cls.get_trades(cls.get_market_symbol(source, dest), True)
+        sells = sorted(sells, key=itemgetter('price'), reverse=True)
+        buys = cls.get_trades(cls.get_market_symbol(source, dest), False)
+        buys = sorted(buys, key=itemgetter('price'))
+        best_sell = sells[0]
+        best_buy = buys[0]
+        return {
+            'bestSell': best_sell['price'],
+            'bestBuy': best_buy['price'],
+        }

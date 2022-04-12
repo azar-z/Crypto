@@ -37,6 +37,7 @@ urlpatterns = [
     path('accounts/<slug:account_type>/', views.accounts_view, name='accounts'),
 
     path('trades/new/', views.NewTradeView.as_view(), name='new_trade'),
+    path('prices/compare/', views.ComparePricesView.as_view(), name='compare_prices'),
 
     re_path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,100})/$',
             views.activate_view, name='activate'),

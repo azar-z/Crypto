@@ -2,6 +2,7 @@ import datetime
 import json
 
 import requests
+from django.core.cache import cache
 from django.db import models
 
 from trade.currencies import ALL_CURRENCIES
@@ -27,18 +28,18 @@ class Wallex(Account):
 
     @staticmethod
     def get_raw_orderbook(market_symbol, is_bids):
-        url = "https://api.wallex.ir/v1/depth?symbol=" + market_symbol
-        response = requests.get(url)
+        cache_key = 'wallex_orderbook_' + market_symbol
+        response = cache.get(cache_key)
         order_book_type = 'ask'
         if is_bids:
             order_book_type = 'bid'
-        return response.json()['result'][order_book_type]
+        return response['result'][order_book_type]
 
     @staticmethod
     def get_raw_trades(market_symbol, is_sell):
-        url = "https://api.wallex.ir/v1/trades?symbol=" + market_symbol
-        response = requests.get(url)
-        all_trades = response.json()['result']['latestTrades']
+        cache_key = 'wallex_trades_' + market_symbol
+        response = cache.get(cache_key)
+        all_trades = response['result']['latestTrades']
         specific_type_trades = []
         for trade in all_trades:
             if trade['isBuyOrder'] != is_sell:
@@ -119,9 +120,14 @@ class Wallex(Account):
         return ""
 
     def get_balance_of_all_currencies(self):
-        url = "https://api.wallex.ir/v1/account/balances"
-        response = requests.get(url, headers=self.get_authentication_headers(), data="")
-        response = response.json()
+        cache_key = 'wallex_balance_' + str(self.id)
+        if cache_key not in cache:
+            url = "https://api.wallex.ir/v1/account/balances"
+            response = requests.get(url, headers=self.get_authentication_headers(), data="")
+            response = response.json()
+            cache.set(cache_key, response, timeout=300)
+        else:
+            response = cache.get(cache_key)
         if response['success']:
             balance_of_all = []
             for currency_tuple in ALL_CURRENCIES:
@@ -136,3 +142,14 @@ class Wallex(Account):
                     balance_of_all.append((currency, balance))
             return balance_of_all
         return ""
+
+    @classmethod
+    def get_market_info(cls, source, dest):
+        market_symbol = cls.get_market_symbol(source, dest)
+        cache_key = 'wallex_market'
+        response = cache.get(cache_key)
+        response = response['result']['symbols'][market_symbol]['stats']
+        return {
+            'bestSell': round(float(response['24h_highPrice'])) * 10,
+            'bestBuy': round(float(response['24h_lowPrice'])) * 10,
+        }

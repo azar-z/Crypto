@@ -2,7 +2,6 @@ SOURCE_CURRENCIES = (
     ('BTC', 'Bitcoin'),
     ('BCH', 'Bitcoin Cash'),
     ('ETH', 'Ethereum'),
-    ('ETC', 'Ethereum Classic'),
     ('USDT', 'Tether'),
 )
 DEST_CURRENCIES = (

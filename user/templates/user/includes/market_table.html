@@ -1,0 +1,31 @@
+<table class="table table-bordered market-table">
+    <thead class="thead-light">
+    <tr>
+        <th colspan="4">{{ title }}</th>
+    </tr>
+    <tr>
+        <td>Price</td>
+        <td>Size</td>
+        <td>Total</td>
+        <td>Market</td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in sell %}
+        <tr class="table-danger">
+            <td>{{ item.price }}</td>
+            <td>{{ item.size }}</td>
+            <td>{{ item.total }}</td>
+            <td>{{ item.market }}</td>
+        </tr>
+    {% endfor %}
+    {% for item in buy %}
+        <tr class="table-success">
+            <td>{{ item.price }}</td>
+            <td>{{ item.size }}</td>
+            <td>{{ item.total }}</td>
+            <td>{{ item.market }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

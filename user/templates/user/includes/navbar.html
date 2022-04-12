@@ -36,9 +36,21 @@
                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Trades
                         </a>
-                        <div class="dropdown-menu {% if url_name == 'new_trade' or url_name == 'accounts' %}active{% endif %}"
+                        <div class="dropdown-menu {% if url_name == 'new_trade' or url_name == 'new_trade' %}active{% endif %}"
                              aria-labelledby="tradesDropdown">
                             <a class="dropdown-item" href="{% url 'new_trade' %}">New Trade</a>
+                        </div>
+                    </li>
+
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="pricesDropdown" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Prices
+                        </a>
+                        <div class="dropdown-menu {% if url_name == 'compare_prices' or url_name == 'compare_prices'%}active{% endif %}"
+                             aria-labelledby="pricesDropdown">
+                            <a class="dropdown-item" href="{% url 'compare_prices' %}">Compare Prices</a>
                         </div>
                     </li>
                 {% endif %}

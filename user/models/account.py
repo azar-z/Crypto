@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 import user.validators.account as validators
+from trade.currencies import SOURCE_CURRENCIES
 from user.errors import NoAuthenticationInformation
 from user.models.base_model import BaseModel
 from user.models.user import User
@@ -14,6 +15,7 @@ ACCOUNT_TYPE_CHOICES = (
     ('E', "Exir"),
 )
 
+NUMBER_OF_ROWS = 6
 
 # source = BTC
 # dest = IRR
@@ -43,14 +45,14 @@ class Account(BaseModel):
 
     @classmethod
     def get_orderbook(cls, market_symbol, is_bids):
-        raw_orders = cls.get_raw_orderbook(market_symbol, is_bids)[:10]
+        raw_orders = cls.get_raw_orderbook(market_symbol, is_bids)[:NUMBER_OF_ROWS]
         orders = []
         for raw_order in raw_orders:
-            price = cls.get_toman_price_from_raw_order(raw_order)
+            price = round(cls.get_toman_price_from_raw_order(raw_order))
             if cls.get_toman_symbol() in market_symbol:
                 price *= 10
             size = cls.get_size_from_raw_order(raw_order)
-            total = price * size
+            total = round(price * size)
             market = cls.__name__
             orders.append({"price": price, "size": size, "total": total, "market": market})
         return orders
@@ -62,7 +64,9 @@ class Account(BaseModel):
             market_symbol = subclass.get_market_symbol(source, dest)
             orders.extend(subclass.get_orderbook(market_symbol, is_bids))
         orders = sorted(orders, key=itemgetter('price'), reverse=True)
-        return orders[:10]
+        if is_bids:
+            return orders[-NUMBER_OF_ROWS:]
+        return orders[:NUMBER_OF_ROWS]
 
     @staticmethod
     def get_toman_price_from_raw_order(raw_order):
@@ -74,16 +78,16 @@ class Account(BaseModel):
 
     @classmethod
     def get_trades(cls, market_symbol, is_sell):
-        raw_trades = cls.get_raw_trades(market_symbol, is_sell)[:10]
+        raw_trades = cls.get_raw_trades(market_symbol, is_sell)[:NUMBER_OF_ROWS]
         trades = []
         for raw_trade in raw_trades:
-            price = cls.get_toman_price_from_raw_trade(raw_trade)
+            price = round(cls.get_toman_price_from_raw_trade(raw_trade))
             if cls.get_toman_symbol() in market_symbol:
                 price *= 10
             size = cls.get_size_from_raw_trade(raw_trade)
-            # time = cls.get_time_from_raw_trade(raw_trade)
+            total = round(price * size)
             market = cls.__name__
-            trades.append({"price": price, "size": size, "time": 'some time', "market": market})
+            trades.append({"price": price, "size": size, "total": total, "market": market})
         return trades
 
     @staticmethod
@@ -93,7 +97,9 @@ class Account(BaseModel):
             market_symbol = subclass.get_market_symbol(source, dest)
             trades.extend(subclass.get_trades(market_symbol, is_sell))
         trades = sorted(trades, key=itemgetter('price'), reverse=True)
-        return trades[:10]
+        if is_sell:
+            return trades[-NUMBER_OF_ROWS:]
+        return trades[:NUMBER_OF_ROWS]
 
     @staticmethod
     def get_raw_trades(market_symbol, is_sell):
@@ -110,6 +116,24 @@ class Account(BaseModel):
     @staticmethod
     def get_time_from_raw_trade(raw_trade):
         return timezone.now()
+
+    @classmethod
+    def get_market_info(cls, source, dest):
+        pass
+
+    @staticmethod
+    def get_market_info_of_all(dest):
+        market_info = []
+        for currency_tuple in SOURCE_CURRENCIES:
+            currency = currency_tuple[0]
+            _market_info = {}
+            for subclass in Account.__subclasses__():
+                subclass_market_info = subclass.get_market_info(currency, dest)
+                _market_info.update({
+                    subclass.__name__.lower(): subclass_market_info
+                })
+            market_info.append({'currency': currency, 'info': _market_info})
+        return market_info
 
     @staticmethod
     def raise_authentication_expired_exception():

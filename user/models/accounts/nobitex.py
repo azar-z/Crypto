@@ -89,7 +89,7 @@ class Nobitex(Account):
             "amount": float(amount),
             "price": int(price)})
         headers = self.get_authentication_headers().update({
-            'Content-Type': 'application/json',
+            'content-type': 'application/json',
         })
         url = "https://api.nobitex.ir/market/orders/add"
         response = requests.post(url, headers=headers, data=data)
@@ -120,3 +120,15 @@ class Nobitex(Account):
             if balance > 0.0:
                 balance_of_all.append((currency, balance))
         return balance_of_all
+
+    @classmethod
+    def get_market_info(cls, source, dest):
+        source = cls.get_currency_symbol(source)
+        dest = cls.get_currency_symbol(dest)
+        cache_key = 'nobitex_market_' + source + '_' + dest
+        response = cache.get(cache_key)
+        response = response['stats'][source + '-' + dest]
+        return {
+            'bestSell': round(float(response['bestSell'])),
+            'bestBuy': round(float(response['bestBuy'])),
+        }
