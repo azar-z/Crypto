@@ -1,0 +1,63 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} New Trade {% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="{% static 'user/styles/important_form.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'trade/styles/new_trade.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="POST" id="order_form">
+        {% csrf_token %}
+        <legend>Order a new trade</legend>
+        {{ form }}
+        <input class="btn btn-info" type="submit" value="Save Order"/>
+    </form>
+
+
+
+    <script>
+        const function_for_rendering_tables = function () {
+            $.ajax({
+                data: $('#order_form').serializeArray(),
+                url: "{% url 'get_orderbook_and_trades' %}",
+                success: function (response) {
+                    $('#orderbook_and_trade').remove();
+                    $(response).insertAfter('#order_form');
+                },
+                error: function (response) {
+                    console.log(response.responseJSON.errors)
+                }
+            });
+            return false;
+        };
+
+        function_for_disabling_second_step_fields = function () {
+            if ($(this).is(':checked')) {
+                $('.second_step_field').each(function () {
+                    $(this).removeAttr('disabled');
+                });
+            } else {
+                $('.second_step_field').each(function () {
+                    $(this).attr('disabled', 'disabled');
+                });
+            }
+        };
+
+        $(document).ready(function () {
+            $('.second_step_field').each(function () {
+                $(this).attr('disabled', 'disabled');
+            });
+            $('#id_source_currency_type').change(function_for_rendering_tables);
+            $('#id_dest_currency_type').change(function_for_rendering_tables);
+            $('#id_first_step_account_type').change(function_for_rendering_tables);
+            $('#id_has_second_step').click(function_for_disabling_second_step_fields);
+        })
+
+    </script>
+
+{% endblock %}

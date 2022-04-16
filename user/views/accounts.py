@@ -19,10 +19,13 @@ def accounts_view(request, account_type):
         context.update({
             'form': form,
         })
-        try:
-            context.update({
-                'balances': account.get_balance_of_all_currencies(),
-            })
-        except NoAuthenticationInformation:
+        if account.has_authentication_information():
+            try:
+                context.update({
+                    'balances': account.get_balance_of_all_currencies(),
+                })
+            except NoAuthenticationInformation:
+                context.update({'error': 'Please update the account information so we can connect to your account.'})
+        else:
             context.update({'error': 'Please update the account information so we can connect to your account.'})
         return render(request, 'user/accounts/account_detail.html', context)

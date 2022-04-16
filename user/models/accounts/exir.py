@@ -6,7 +6,7 @@ import requests
 from django.core.cache import cache
 from django.db import models
 
-from trade.currencies import ALL_CURRENCIES
+from trade.currencies import ALL_CURRENCIES, AccountOrderStatus
 from user.models import Account
 
 
@@ -14,6 +14,10 @@ class Exir(Account):
     api_key = models.CharField(max_length=200)
     api_signature = models.CharField(max_length=200)
     api_expires = models.CharField(max_length=200)
+
+    @staticmethod
+    def get_toman_symbol():
+        return 'irt'
 
     @staticmethod
     def get_currency_symbol(currency):
@@ -157,3 +161,33 @@ class Exir(Account):
             'bestSell': best_sell['price'],
             'bestBuy': best_buy['price'],
         }
+
+    def request_withdraw(self, currency, amount, address):
+        url = "https://api.exir.io/v1/user/request-withdrawal"
+        headers = self.get_authentication_headers()
+        data = {
+            "currency": self.get_currency_symbol(currency),
+            "amount": str(amount),
+            "address": address,
+        }
+        response = requests.get(url, headers=headers, data=data)
+        response = response.json()
+        try:
+            return response['message'] == 'Success'
+        except KeyError:
+            return False
+
+    def get_order_status(self, order_id):
+        url = 'https://api.exir.io/v1/user/orders/' + order_id
+        headers = self.get_authentication_headers()
+        response = requests.get(url, headers=headers).json()
+        try:
+            size = response['size']
+            filled = response['filled']
+            if size < filled:
+                return AccountOrderStatus.ACTIVE
+            else:
+                return AccountOrderStatus.DONE
+        except KeyError:
+            return AccountOrderStatus.CANCELLED
+

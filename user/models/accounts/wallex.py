@@ -5,7 +5,7 @@ import requests
 from django.core.cache import cache
 from django.db import models
 
-from trade.currencies import ALL_CURRENCIES
+from trade.currencies import ALL_CURRENCIES, AccountOrderStatus
 from user.models import Account
 
 
@@ -153,3 +153,6 @@ class Wallex(Account):
             'bestSell': round(float(response['24h_highPrice'])) * 10,
             'bestBuy': round(float(response['24h_lowPrice'])) * 10,
         }
+
+    def get_order_status(self, order_id):
+        return AccountOrderStatus.CANCELLED

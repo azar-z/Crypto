@@ -5,12 +5,17 @@ import requests
 from django.core.cache import cache
 from django.db import models
 
-from trade.currencies import ALL_CURRENCIES
+from trade.currencies import ALL_CURRENCIES, AccountOrderStatus
 from user.models import Account
 
 
 class Nobitex(Account):
     token = models.CharField(max_length=100)
+    Account._meta.get_field('needs_withdraw_confirmation').default = True
+
+    @staticmethod
+    def is_orderbook_in_toman():
+        return False
 
     @staticmethod
     def get_currency_symbol(currency):
@@ -91,7 +96,7 @@ class Nobitex(Account):
         headers = self.get_authentication_headers().update({
             'content-type': 'application/json',
         })
-        url = "https://api.nobitex.ir/market/orders/add"
+        url = "https://testnetapi.nobitex.ir/market/orders/add"
         response = requests.post(url, headers=headers, data=data)
         response = response.json()
         if response['status'] == 'ok':
@@ -132,3 +137,67 @@ class Nobitex(Account):
             'bestSell': round(float(response['bestSell'])),
             'bestBuy': round(float(response['bestBuy'])),
         }
+
+    def get_wallet_id(self, currency):
+        url = 'https://api.nobitex.ir/v2/wallets'
+        headers = self.get_authentication_headers()
+        currency = self.get_currency_symbol(currency)
+        data = {"currencies": currency}
+        response = requests.post(url, headers=headers, data=data).json()
+        currency = currency.upper()
+        try:
+            return response['wallets'][currency]['id']
+        except KeyError:
+            return False
+
+    def _request_withdraw(self, wallet, amount, address):
+        url = 'https://api.nobitex.ir/users/wallets/withdraw'
+        headers = self.get_authentication_headers()
+        data = {
+            "wallet": wallet,
+            "amount": str(amount),
+            "address": address,
+            "noTag": True,
+            "explanations": 'Crypto Site.',
+        }
+        response = requests.post(url, headers, data).json()
+        try:
+            return response['withdraw']['id']
+        except KeyError:
+            return False
+
+    def request_withdraw(self, currency, amount, address):
+        wallet = self.get_wallet_id(currency)
+        response = self._request_withdraw(wallet, amount, address)
+        return response
+
+    def confirm_withdraw(self, withdraw_id, otp):
+        url = 'https://api.nobitex.ir/users/wallets/withdraw-confirm'
+        headers = self.get_authentication_headers()
+        data = {
+            "withdraw": withdraw_id,
+            "otp": otp,
+        }
+        response = requests.post(url, headers=headers, data=data).json()
+        try:
+            return response['withdraw']['status'] == 'Verified'
+        except KeyError:
+            return False
+
+    def get_order_status(self, order_id):
+        url = 'https://api.nobitex.ir/market/orders/status'
+        headers = self.get_authentication_headers()
+        data = {
+            'id': int(order_id),
+        }
+        response = requests.post(url, headers=headers, data=data).json()
+        try:
+            status = response['order']['status']
+            if status == 'Active':
+                return AccountOrderStatus.ACTIVE
+            elif status == 'Done':
+                return AccountOrderStatus.DONE
+            else:
+                return AccountOrderStatus.CANCELLED
+        except KeyError:
+            return AccountOrderStatus.CANCELLED

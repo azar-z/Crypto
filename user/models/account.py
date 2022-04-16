@@ -24,6 +24,11 @@ NUMBER_OF_ROWS = 6
 class Account(BaseModel):
     owner = models.OneToOneField(User, on_delete=models.CASCADE, validators=[validators.validate_not_staff],
                                  related_name='%(class)s_account')
+    needs_withdraw_confirmation = models.BooleanField(default=False)
+
+    @staticmethod
+    def is_orderbook_in_toman():
+        return True
 
     @staticmethod
     def get_toman_symbol():
@@ -49,13 +54,16 @@ class Account(BaseModel):
         orders = []
         for raw_order in raw_orders:
             price = round(cls.get_toman_price_from_raw_order(raw_order))
-            if cls.get_toman_symbol() in market_symbol:
+            if cls.get_toman_symbol() in market_symbol and cls.is_orderbook_in_toman():
                 price *= 10
-            size = cls.get_size_from_raw_order(raw_order)
+            size = round(cls.get_size_from_raw_order(raw_order), 6)
             total = round(price * size)
             market = cls.__name__
             orders.append({"price": price, "size": size, "total": total, "market": market})
-        return orders
+        orders = sorted(orders, key=itemgetter('price'), reverse=True)
+        if is_bids:
+            return orders[-NUMBER_OF_ROWS:]
+        return orders[:NUMBER_OF_ROWS]
 
     @staticmethod
     def get_orderbook_of_all(source, dest, is_bids):
@@ -82,13 +90,16 @@ class Account(BaseModel):
         trades = []
         for raw_trade in raw_trades:
             price = round(cls.get_toman_price_from_raw_trade(raw_trade))
-            if cls.get_toman_symbol() in market_symbol:
+            if cls.get_toman_symbol() in market_symbol and cls.is_orderbook_in_toman():
                 price *= 10
-            size = cls.get_size_from_raw_trade(raw_trade)
+            size = round(cls.get_size_from_raw_trade(raw_trade), 6)
             total = round(price * size)
             market = cls.__name__
             trades.append({"price": price, "size": size, "total": total, "market": market})
-        return trades
+        trades = sorted(trades, key=itemgetter('price'), reverse=True)
+        if is_sell:
+            return trades[-NUMBER_OF_ROWS:]
+        return trades[:NUMBER_OF_ROWS]
 
     @staticmethod
     def get_trades_of_all(source, dest, is_sell):
@@ -154,9 +165,20 @@ class Account(BaseModel):
     def has_authentication_information(self):
         pass
 
-    def get_wallets(self):
+    def request_withdraw(self, currency, amount, address):
+        return False
+
+    def confirm_withdraw(self, withdraw_id, otp):
+        return False
+
+    @classmethod
+    def make_an_account_for_user(cls, user):
+        account = cls.objects.create(owner=user)
+        account.save()
+        return account
+
+    def get_order_status(self, order_id):
         pass
-        # usage??
 
     class Meta:
         abstract = True

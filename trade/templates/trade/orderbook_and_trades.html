@@ -1,0 +1,6 @@
+{% if is_valid %}
+    <div id="orderbook_and_trade">
+        {% include 'trade/includes/market_table.html' with sell=orderbook_bids buy=orderbook_asks title='Orderbook' %}
+        {% include 'trade/includes/market_table.html' with sell=trades_sell buy=trades_buy title='Trades' %}
+    </div>
+{% endif %}

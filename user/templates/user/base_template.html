@@ -16,12 +16,14 @@
 <body>
 <div class="container-fluid">
 
-{% include 'user/includes/messages.html' %}
-{% include 'user/includes/navbar.html' %}
-<div>
-    {% block content %}
-    {% endblock %}
-</div>
+
+    {% include 'user/includes/navbar.html' %}
+    {% include 'user/includes/messages.html' %}
+
+    <div>
+        {% block content %}
+        {% endblock %}
+    </div>
 </div>
 
 </body>

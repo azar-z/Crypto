@@ -1,0 +1,68 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+
+{% block title %} Notice {% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th colspan="2">First Step</th>
+        </tr>
+        </thead>
+        <tr>
+            <th>Currency</th>
+            <td>{{ order.source_currency_amount }} {{ order.source_currency_type }}</td>
+        </tr>
+        <tr>
+            <th>Price</th>
+            <td>{{ order.price }} {{ order.dest_currency_type }}</td>
+        </tr>
+        <tr>
+            <th>Total</th>
+            <td>{{ order.get_total }} {{ order.dest_currency_type }}</td>
+        </tr>
+        <tr>
+            <th>Ordered At</th>
+            <td>{{ order.first_step_time|date }}</td>
+        </tr>
+        <tr>
+            <th>Account</th>
+            <td>{{ order.first_step_account_type }}</td>
+        </tr>
+    </table>
+    {% if order.has_second_step %}
+        <br>
+        <br>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th colspan="2">Second Step</th>
+            </tr>
+            </thead>
+            <tr>
+                <th>Price</th>
+                <td>{{ order.price }} {{ order.dest_currency_type }}</td>
+            </tr>
+            <tr>
+                <th>Total</th>
+                <td>{{ order.get_second_step_total }} {{ order.dest_currency_type }}</td>
+            </tr>
+            <tr>
+                <th>Ordered At</th>
+                <td>{{ order.second_step_time|date }}</td>
+            </tr>
+            <tr>
+                <th>Account</th>
+                <td>{{ order.second_step_account_type }}</td>
+            </tr>
+        </table>
+
+    {% endif %}
+
+
+{% endblock %}

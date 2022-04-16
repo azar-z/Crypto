@@ -1,0 +1,18 @@
+{% extends 'user/base_template.html' %}
+{% load django_tables2 %}
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% load crispy_forms_tags%}
+
+{% block title %} Profit And Loss {% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <h1>Trades</h1>
+{% include 'trade/includes/filter.html' %}
+{% include 'trade/includes/order_table.html' %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} Transfer Confirm {% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="{% static 'user/styles/important_form.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div align="center">
+        <form method="post" action="" align="left">
+            {% csrf_token %}
+            <legend>Check your SMSs and enter the OTP that was sent to you:</legend>
+            {{ form|crispy }}
+            <input type="submit" value="Confirm" class="btn btn-info">
+        </form>
+    </div>
+{% endblock %}

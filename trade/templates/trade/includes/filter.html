@@ -1,0 +1,12 @@
+{% load django_tables2 %}
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% load crispy_forms_tags%}
+
+{{ filter.form.media }}
+<form action="" method="get" style="margin-bottom: 10px" class="form-inline">
+    {{ filter.form|crispy }}
+    <input type="submit" value="search" class="btn btn-info" style="margin: 20px 0 0 10px"/>
+</form>

@@ -24,6 +24,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('login/', auth_views.LoginView.as_view(template_name='user/login.html'), name='login'),
     path('signup/', views.signup_view, name='signup'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
 
     path('user_panel', TemplateView.as_view(template_name='user/profile/user_panel.html'), name='user_panel'),
@@ -35,9 +36,6 @@ urlpatterns = [
     path('change_password/done/', auth_views.PasswordChangeDoneView.as_view(template_name='user/profile/password_change_done.html'), name='password_change_done'),
 
     path('accounts/<slug:account_type>/', views.accounts_view, name='accounts'),
-
-    path('trades/new/', views.NewTradeView.as_view(), name='new_trade'),
-    path('prices/compare/', views.ComparePricesView.as_view(), name='compare_prices'),
 
     re_path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,100})/$',
             views.activate_view, name='activate'),

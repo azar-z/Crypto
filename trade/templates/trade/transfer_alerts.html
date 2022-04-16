@@ -1,0 +1,17 @@
+{% extends 'user/base_template.html' %}
+{% load django_tables2 %}
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% load crispy_forms_tags %}
+
+{% block title %} Transfer Alerts {% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <h3>Confirm These Transfers:</h3>
+{% include 'trade/includes/order_table.html' %}
+{% endblock %}
