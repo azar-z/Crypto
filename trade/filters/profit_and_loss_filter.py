@@ -5,9 +5,9 @@ from trade.models import Order
 
 
 class ProfitAndLossFilterSet(django_filters.FilterSet):
-    first_step_time = django_filters.DateTimeFilter(label='From', widget=DateTimePickerInput(), lookup_expr='gt')
-    second_step_time = django_filters.DateTimeFilter(label='Till', widget=DateTimePickerInput(), lookup_expr='lt')
+    time = django_filters.DateTimeFilter(label='From', widget=DateTimePickerInput(), lookup_expr='gt')
+    next_step__time = django_filters.DateTimeFilter(label='Till', widget=DateTimePickerInput(), lookup_expr='lt')
 
     class Meta:
         model = Order
-        fields = ['first_step_time', 'second_step_time']
+        fields = ['time', 'next_step__time']

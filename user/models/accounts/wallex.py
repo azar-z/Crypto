@@ -1,5 +1,6 @@
 import datetime
 import json
+from decimal import Decimal
 
 import requests
 from django.core.cache import cache
@@ -47,16 +48,16 @@ class Wallex(Account):
         return specific_type_trades
 
     @staticmethod
-    def get_toman_price_from_raw_order(raw_order):
-        return float(raw_order['price'])
+    def get_price_from_raw_order(raw_order):
+        return Decimal(raw_order['price'])
 
     @staticmethod
     def get_size_from_raw_order(raw_order):
         return float(raw_order['quantity'])
 
     @staticmethod
-    def get_toman_price_from_raw_trade(raw_trade):
-        return float(raw_trade['price'])
+    def get_price_from_raw_trade(raw_trade):
+        return Decimal(raw_trade['price'])
 
     @staticmethod
     def get_size_from_raw_trade(raw_trade):

@@ -1,5 +1,6 @@
 import datetime
 import json
+from decimal import Decimal
 
 import requests
 from django.core.cache import cache
@@ -47,16 +48,16 @@ class Nobitex(Account):
         return specific_type_trades
 
     @staticmethod
-    def get_toman_price_from_raw_order(raw_order):
-        return int(raw_order[0])
+    def get_price_from_raw_order(raw_order):
+        return Decimal(raw_order[0])
 
     @staticmethod
     def get_size_from_raw_order(raw_order):
         return float(raw_order[1])
 
     @staticmethod
-    def get_toman_price_from_raw_trade(raw_trade):
-        return int(raw_trade['price'])
+    def get_price_from_raw_trade(raw_trade):
+        return Decimal(raw_trade['price'])
 
     @staticmethod
     def get_size_from_raw_trade(raw_trade):
@@ -99,9 +100,13 @@ class Nobitex(Account):
         url = "https://testnetapi.nobitex.ir/market/orders/add"
         response = requests.post(url, headers=headers, data=data)
         response = response.json()
-        if response['status'] == 'ok':
-            return str(response['order']['id'])
-        return ""
+        try:
+            if response['status'] == 'ok':
+                return str(response['order']['id'])
+            return False
+        except KeyError:
+            return False
+
 
     def get_balance(self, currency):
         cache_key = 'nobitex_balance_' + currency + '_' + str(self.id)

@@ -1,5 +1,5 @@
 from django import forms
 
 
-class TransferConfirmForm(forms.Form):
+class OTPForm(forms.Form):
     otp = forms.CharField(label='OTP', max_length=100)

@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import generic
 
 from trade.forms.order import OrderForm
 from trade.models import Order
+from user.errors import NoAuthenticationInformation
 from user.logics.accounts import get_account_class_based_on_type
 from user.models import Account
 
@@ -19,20 +20,19 @@ class NewTradeView(generic.CreateView):
     def form_valid(self, form):
         response = super(NewTradeView, self).form_valid(form)
         order = self.object
-        order.owner = self.request.user
-        order.save()
-        order.order_first_step()
-        if order.first_step_ordered:
-            messages.success(self.request, 'Operation was successful.')
-        else:
-            messages.warning(self.request, "Operation wasn't successful.")
+        order.set_owner(self.request.user)
+        try:
+            order.order_transaction()
+        except NoAuthenticationInformation:
+            messages.error(self.request, 'We need valid authentication information for ordering a transaction')
+            return redirect('accounts', account_type=order.account_type)
         return response
 
 
 def get_orderbook_and_trades_view(request):
     source_currency = request.GET.get('source_currency_type', None)
-    dest_currency = request.GET.get('dest_currency_type', None)
-    first_step_account_type = request.GET.get('first_step_account_type', None)
+    dest_currency = 'USDT'
+    first_step_account_type = request.GET.get('account_type', None)
     first_step_account = get_account_class_based_on_type(first_step_account_type)
     if source_currency is not None and dest_currency is not None and source_currency != '' and dest_currency != '':
         if first_step_account is None:

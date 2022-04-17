@@ -14,7 +14,7 @@
     <form action="" method="POST" id="order_form">
         {% csrf_token %}
         <legend>Order a new trade</legend>
-        {{ form }}
+        {{ form|crispy }}
         <input class="btn btn-info" type="submit" value="Save Order"/>
     </form>
 
@@ -39,23 +39,19 @@
         function_for_disabling_second_step_fields = function () {
             if ($(this).is(':checked')) {
                 $('.second_step_field').each(function () {
-                    $(this).removeAttr('disabled');
+                    $(this).attr('disabled', 'disabled');
                 });
             } else {
                 $('.second_step_field').each(function () {
-                    $(this).attr('disabled', 'disabled');
+                    $(this).removeAttr('disabled');
                 });
             }
         };
 
         $(document).ready(function () {
-            $('.second_step_field').each(function () {
-                $(this).attr('disabled', 'disabled');
-            });
             $('#id_source_currency_type').change(function_for_rendering_tables);
-            $('#id_dest_currency_type').change(function_for_rendering_tables);
-            $('#id_first_step_account_type').change(function_for_rendering_tables);
-            $('#id_has_second_step').click(function_for_disabling_second_step_fields);
+            $('#id_account_type').change(function_for_rendering_tables);
+            $('#id_no_second_step').click(function_for_disabling_second_step_fields);
         })
 
     </script>

@@ -8,9 +8,13 @@ from trade.models import Order
 class OrderDataTable(tables.Table):
     source_currency_amount = tables.Column(verbose_name='Currency')
     price = tables.Column(verbose_name='Price')
-    is_sell = tables.Column(verbose_name='Action To Currency')
+    is_sell = tables.Column(verbose_name='Actions')
     id = tables.Column(verbose_name='')
-    created = tables.Column(verbose_name='Ordered At')
+    created = tables.Column(verbose_name='Ordered In')
+    account_type = tables.Column(verbose_name='First Action At')
+    next_step__account_type = tables.Column(verbose_name='Second Action At')
+    status = tables.Column(verbose_name='First Action Status')
+    next_step__status = tables.Column(verbose_name='Second Action Status')
 
     def render_id(self, value, record):
         href = reverse('order_detail', kwargs={'pk': value})
@@ -25,26 +29,24 @@ class OrderDataTable(tables.Table):
     def render_is_sell(self, value, record):
         buy = '<span class="table-success">buy</span>'
         sell = '<span class="table-danger">sell</span>'
-        result = '-'
-        if record.has_second_step:
-            if not value:
-                result = buy + ' then ' + sell
+        if value:
+            first = sell
+            second = buy
         else:
-            if value:
-                result = sell
-            else:
-                result = buy
+            first = buy
+            second = sell
+        if record.has_next_step():
+            result = first + ' then ' + second
+        else:
+            result = first
         return format_html(result)
 
-    def render_second_step_account_type(self, value, record):
-        if record.has_second_step:
-            return '-'
-        else:
-            return value
+    def render_next_step__account_type(self, value, record):
+        return record.next_step.get_account_type_display()
 
     class Meta:
         model = Order
         template_name = 'django_tables2/bootstrap-responsive.html'
-        fields = ['created', 'source_currency_amount', 'price', 'is_sell', 'first_step_account_type',
-                  'second_step_account_type', 'status', 'id']
+        fields = ['created', 'source_currency_amount', 'price', 'is_sell', 'account_type',
+                  'next_step__account_type', 'status', 'next_step__status', 'id']
 

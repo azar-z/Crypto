@@ -17,4 +17,5 @@ class OrderListView(SingleTableMixin, FilterView):
     filterset_class = OrderListFilterSet
 
     def get_queryset(self):
-        return self.request.user.orders.all()
+        return self.request.user.orders.exclude(status='NO').filter(previous_step=None)
+

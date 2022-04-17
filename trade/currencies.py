@@ -2,7 +2,6 @@ import enum
 
 SOURCE_CURRENCIES = (
     ('BTC', 'Bitcoin'),
-    ('BCH', 'Bitcoin Cash'),
     ('ETH', 'Ethereum'),
 )
 DEST_CURRENCIES = (

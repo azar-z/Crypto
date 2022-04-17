@@ -18,4 +18,5 @@ class ProfitAndLossView(SingleTableMixin, filter_views.FilterView):
 
     def get_queryset(self):
         current_user = self.request.user
-        return current_user.orders.all()
+        return current_user.orders.exclude(status='NO').filter(previous_step=None)
+

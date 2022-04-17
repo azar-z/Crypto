@@ -5,10 +5,9 @@ from trade.models import Order
 
 
 class TransferAlertsTable(tables.Table):
-    source_currency_amount = tables.Column(verbose_name='Currency')
-    second_step_price = tables.Column(verbose_name='Sell Price')
-    first_step_account_type = tables.Column(verbose_name='From')
-    second_step_account_type = tables.Column(verbose_name='To')
+    currency = tables.Column(verbose_name='Currency', accessor='get_transferred_currency')
+    account_type = tables.Column(verbose_name='From')
+    next_step__account_type = tables.Column(verbose_name='To')
     confirm_or_cancel = tables.Column(verbose_name='', accessor='get_profit_or_loss')
 
     def render_confirm_or_cancel(self, value, record):
@@ -18,11 +17,10 @@ class TransferAlertsTable(tables.Table):
         cancel_button = "<a class='btn btn-danger' href={0}>Cancel</span>".format(cancel_page)
         return format_html(confirm_button + cancel_button)
 
-    def render_source_currency_amount(self, value, record):
-        return format_html('<span>{0} {1}</span>', value, record.source_currency_type)
+    def render_currency(self, value, record):
+        return format_html('<span>{0} {1}</span>', value[0], value[1])
 
     class Meta:
         model = Order
         template_name = 'django_tables2/bootstrap-responsive.html'
-        fields = ['source_currency_amount', 'second_step_price', 'first_step_account_type',
-                  'second_step_account_type', 'confirm_or_cancel']
+        fields = ['currency', 'account_type', 'next_step__account_type', 'confirm_or_cancel']

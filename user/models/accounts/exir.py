@@ -1,5 +1,6 @@
 import datetime
 import json
+from decimal import Decimal
 from operator import itemgetter
 
 import requests
@@ -58,16 +59,16 @@ class Exir(Account):
         return specific_type_trades
 
     @staticmethod
-    def get_toman_price_from_raw_order(raw_order):
-        return int(raw_order[0])
+    def get_price_from_raw_order(raw_order):
+        return Decimal(raw_order[0])
 
     @staticmethod
     def get_size_from_raw_order(raw_order):
         return float(raw_order[1])
 
     @staticmethod
-    def get_toman_price_from_raw_trade(raw_trade):
-        return int(raw_trade['price'])
+    def get_price_from_raw_trade(raw_trade):
+        return Decimal(raw_trade['price'])
 
     @staticmethod
     def get_size_from_raw_trade(raw_trade):

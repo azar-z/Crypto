@@ -1,0 +1,41 @@
+    <table class="table">
+        <thead>
+        <tr>
+            <th colspan="2">{{ title }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Currency</th>
+            <td>{{ order.source_currency_amount }} {{ order.source_currency_type }}</td>
+        </tr>
+        <tr>
+            <th>Price</th>
+            <td>{{ order.price }} {{ order.dest_currency_type }}</td>
+        </tr>
+        <tr>
+            <th>Action</th>
+            {% if order.is_sell %}
+                <td class="table-danger"> sell</td>
+            {% else %}
+                <td class="table-success"> buy</td>
+            {% endif %}
+        </tr>
+        <tr>
+            <th>Total</th>
+            <td>{{ order.get_total }} {{ order.dest_currency_type }}</td>
+        </tr>
+        <tr>
+            <th>Ordered In</th>
+            <td>{{ order.time|date }}</td>
+        </tr>
+        <tr>
+            <th>Account</th>
+            <td>{{ order.get_account_type_display }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{{ order.get_status_display }}</td>
+        </tr>
+        </tbody>
+    </table>

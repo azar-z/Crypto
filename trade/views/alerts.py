@@ -15,5 +15,5 @@ class TransferAlertsView(SingleTableView):
     table_class = TransferAlertsTable
 
     def get_queryset(self):
-        return self.request.user.orders.filter(status='L').exclude(has_second_step=False).exclude(first_step_account_type=F('second_step_account_type'))
+        return self.request.user.orders.filter(status='L').exclude(next_step=None).exclude(account_type=F('next_step__account_type'))
 

@@ -53,11 +53,9 @@ class Account(BaseModel):
         raw_orders = cls.get_raw_orderbook(market_symbol, is_bids)[:NUMBER_OF_ROWS]
         orders = []
         for raw_order in raw_orders:
-            price = round(cls.get_toman_price_from_raw_order(raw_order))
-            if cls.get_toman_symbol() in market_symbol and cls.is_orderbook_in_toman():
-                price *= 10
+            price = round(cls.get_price_from_raw_order(raw_order), 2)
             size = round(cls.get_size_from_raw_order(raw_order), 6)
-            total = round(price * size)
+            total = round(float(price) * size, 2)
             market = cls.__name__
             orders.append({"price": price, "size": size, "total": total, "market": market})
         orders = sorted(orders, key=itemgetter('price'), reverse=True)
@@ -77,7 +75,7 @@ class Account(BaseModel):
         return orders[:NUMBER_OF_ROWS]
 
     @staticmethod
-    def get_toman_price_from_raw_order(raw_order):
+    def get_price_from_raw_order(raw_order):
         return 0
 
     @staticmethod
@@ -89,11 +87,9 @@ class Account(BaseModel):
         raw_trades = cls.get_raw_trades(market_symbol, is_sell)[:NUMBER_OF_ROWS]
         trades = []
         for raw_trade in raw_trades:
-            price = round(cls.get_toman_price_from_raw_trade(raw_trade))
-            if cls.get_toman_symbol() in market_symbol and cls.is_orderbook_in_toman():
-                price *= 10
+            price = round(cls.get_price_from_raw_trade(raw_trade), 2)
             size = round(cls.get_size_from_raw_trade(raw_trade), 6)
-            total = round(price * size)
+            total = round(float(price) * size, 2)
             market = cls.__name__
             trades.append({"price": price, "size": size, "total": total, "market": market})
         trades = sorted(trades, key=itemgetter('price'), reverse=True)
@@ -117,7 +113,7 @@ class Account(BaseModel):
         pass
 
     @staticmethod
-    def get_toman_price_from_raw_trade(raw_trade):
+    def get_price_from_raw_trade(raw_trade):
         return 0
 
     @staticmethod

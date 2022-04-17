@@ -1,5 +1,8 @@
+from decimal import Decimal
+
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 from trade.currencies import SOURCE_CURRENCIES, DEST_CURRENCIES, AccountOrderStatus
@@ -8,14 +11,14 @@ from user.models import BaseModel, User
 from user.models.account import ACCOUNT_TYPE_CHOICES
 
 ORDER_STATUS_CHOICES = (
-    ('NO', 'this phase of order hasn\'t started yet'),
-    ('OS', 'transaction step was ordered successfully'),
-    ('OU', 'transaction was ordered unsuccessfully'),
-    ('OD', 'transaction is done'),
-    ('L', 'got to loss or profit limit (second step not started yet)'),
-    ('TOS', 'transfer ordered successfully'),
-    ('TOU', 'transfer ordered unsuccessfully'),
-    ('TD', 'transfer done'),
+    ('NO', 'Not started yet.'),
+    ('OS', 'Transaction was ordered successfully but it is not done yet.'),
+    ('OU', 'Transaction was not successful'),
+    ('OD', 'Transaction is done.'),
+    ('L', 'Got to limit. Check alerts to continue this order'),
+    ('TOS', 'Transaction is done and transfer was ordered successfully but it is not done yet.'),
+    ('TOU', 'Transaction is done but transfer was not successful'),
+    ('TD', 'Transaction is done. Transfer is done.'),
 )
 '''
 possible ways:
@@ -38,17 +41,15 @@ class Order(BaseModel):
     status = models.CharField(choices=ORDER_STATUS_CHOICES, max_length=3, default='NO')
     time = models.DateTimeField(default=timezone.now)
     is_sell = models.BooleanField(null=False)
-    price = models.IntegerField()
-    account_type = models.CharField(choices=ACCOUNT_TYPE_CHOICES, max_length=2)
+    price = models.DecimalField(verbose_name='Price (USDT)', max_digits=20, decimal_places=2, default=0)
+    account_type = models.CharField(verbose_name='In', choices=ACCOUNT_TYPE_CHOICES, max_length=2)
     id_in_account = models.CharField(default='0', max_length=100)
-    source_currency_type = models.CharField(verbose_name='First Currency', max_length=4, choices=SOURCE_CURRENCIES)
-    dest_currency_type = models.CharField(verbose_name='Second Currency', max_length=4, choices=DEST_CURRENCIES)
-    source_currency_amount = models.DecimalField(verbose_name='First Currency Amount', max_digits=15, decimal_places=5)
+    source_currency_type = models.CharField(verbose_name='Currency', max_length=4, choices=SOURCE_CURRENCIES)
+    dest_currency_type = models.CharField(max_length=4, choices=DEST_CURRENCIES, default='USDT')
+    source_currency_amount = models.DecimalField(verbose_name='Amount', max_digits=15, decimal_places=5, default=0)
     profit_limit = models.FloatField(default=0.5, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
                                      blank=True)
-    got_to_profit_limit = models.BooleanField(default=False)
     loss_limit = models.FloatField(default=0.5, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], blank=True)
-    got_to_loss_limit = models.BooleanField(default=False)
     deposit_wallet_address = models.CharField(max_length=200, null=True, default=None, blank=True)
     withdraw_id = models.CharField(max_length=200, null=True, default=None)
     transfer_fee = models.DecimalField(max_digits=15, decimal_places=5, default=0.0)
@@ -58,17 +59,24 @@ class Order(BaseModel):
     class Meta:
         ordering = ('-updated',)
 
+    def get_absolute_url(self):
+        return reverse('order_detail', kwargs={'pk': self.pk})
+
     def has_next_step(self):
         return self.next_step is not None
 
     def get_profit_limit_price(self):
-        return self.price * (1 + self.profit_limit)
+        if self.is_sell:
+            return self.price / Decimal(1 + self.profit_limit)
+        return self.price * Decimal(1 + self.profit_limit)
 
     def get_loss_limit_price(self):
-        return self.price * (1 - self.loss_limit)
+        if self.is_sell:
+            return self.price / Decimal(1 - self.loss_limit)
+        return self.price * Decimal(1 - self.loss_limit)
 
     def needs_transfer(self):
-        return self.account_type != self.next_step.account_type
+        return self.has_next_step() and self.account_type != self.next_step.account_type
 
     def get_account(self):
         return get_account_based_on_type(self.owner, self.account_type)
@@ -110,18 +118,35 @@ class Order(BaseModel):
         market_info = account.get_market_info(self.source_currency_type, self.dest_currency_type)
         market_lowest_price = market_info['bestBuy']
         market_highest_price = market_info['bestSell']
-        if market_highest_price <= self.get_loss_limit_price():
-            self.got_to_loss_limit = True
-            self.second_step_price = market_highest_price
-            self.status = 'L'
-        elif market_lowest_price >= self.get_profit_limit_price():
-            self.got_to_profit_limit = True
-            self.second_step_price = market_highest_price
-            self.status = 'L'
-        self.save()
+        if self.is_sell:
+            if market_lowest_price >= self.get_loss_limit_price():
+                self.next_step.price = market_highest_price
+                self.next_step.source_currency_amount = self.source_currency_amount * Decimal(1 - self.loss_limit)
+                self.status = 'L'
+            elif market_highest_price <= self.get_profit_limit_price():
+                self.next_step.price = market_highest_price
+                self.next_step.source_currency_amount = self.source_currency_amount * Decimal(1 + self.profit_limit)
+                self.status = 'L'
+            self.save()
+        else:
+            if market_highest_price <= self.get_loss_limit_price():
+                self.next_step.price = market_highest_price
+                self.next_step.source_currency_amount = self.source_currency_amount
+                self.status = 'L'
+            elif market_lowest_price >= self.get_profit_limit_price():
+                self.next_step.price = market_highest_price
+                self.next_step.source_currency_amount = self.source_currency_amount
+                self.status = 'L'
+            self.save()
         if self.status == 'L':
             return True
         return False
+
+    def got_to_profit_limit(self):
+        return self.next_step.price > self.price
+
+    def got_to_loss_limit(self):
+        return self.next_step.price <= self.price
 
     def check_for_enough_balance(self):
         account = self.get_account()
@@ -136,7 +161,61 @@ class Order(BaseModel):
         return False
 
     def get_profit_or_loss(self):
-        return self.source_currency_amount * (self.second_step_price - self.price)
+        if self.has_next_step():
+            if self.is_sell:
+                profit_or_loss = (self.next_step.source_currency_amount - self.source_currency_amount) * self.next_step.price
+                profit_or_loss = profit_or_loss * self.next_step.price
+            else:
+                profit_or_loss = self.source_currency_amount * (self.next_step.price - self.price)
+            currency = self.dest_currency_type
+            return profit_or_loss, currency
+        else:
+            return 0, ''
 
     def get_total(self):
         return round(self.source_currency_amount * self.price, 2)
+
+    def get_transferred_currency(self):
+        if self.is_sell:
+            return self.get_total(), self.dest_currency_type
+        else:
+            return self.source_currency_amount, self.source_currency_type
+
+    def get_transfer_status(self):
+        switcher = {
+            'L': 'Waiting for permission',
+            'TOS': 'Order was successful. Waiting to be done.',
+            'TOU': 'Order was not successful.',
+            'TOD': 'Done',
+        }
+        if self.needs_transfer():
+            if self.status in switcher:
+                return switcher[self.status]
+            else:
+                return 'Not started.'
+        else:
+            return 'Not needed'
+
+    def update_status(self):
+        pass
+
+    def set_owner(self, owner):
+        order = self
+        while order is not None:
+            order.owner = owner
+            order.save()
+            order = order.next_step
+
+    def request_withdraw(self):
+        account = self.get_account()
+        currency = self.source_currency_type
+        amount = self.source_currency_amount
+        address = self.deposit_wallet_address
+        return account.request_withdraw(currency, amount, address)
+'''
+needed fields for two step order:
+owner, first_step_is_sell, price, account_type, second_step_account_type,
+                            source_currency_type, dest_currency_type, source_currency_amount, profit_limit,
+                            loss_limit, deposit_wallet_address
+
+'''

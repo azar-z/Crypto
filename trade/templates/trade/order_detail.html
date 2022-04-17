@@ -4,64 +4,43 @@
 {% block title %} Notice {% endblock %}
 
 {% block style %}
+        <link rel="stylesheet" type="text/css" href="{% static 'trade/styles/order_detail.css' %}">
 {% endblock %}
 
 {% block content %}
-    <table class="table">
-        <thead>
-        <tr>
-            <th colspan="2">First Step</th>
-        </tr>
-        </thead>
-        <tr>
-            <th>Currency</th>
-            <td>{{ order.source_currency_amount }} {{ order.source_currency_type }}</td>
-        </tr>
-        <tr>
-            <th>Price</th>
-            <td>{{ order.price }} {{ order.dest_currency_type }}</td>
-        </tr>
-        <tr>
-            <th>Total</th>
-            <td>{{ order.get_total }} {{ order.dest_currency_type }}</td>
-        </tr>
-        <tr>
-            <th>Ordered At</th>
-            <td>{{ order.first_step_time|date }}</td>
-        </tr>
-        <tr>
-            <th>Account</th>
-            <td>{{ order.first_step_account_type }}</td>
-        </tr>
-    </table>
-    {% if order.has_second_step %}
-        <br>
-        <br>
-
+{% include 'trade/includes/order_step_detail_table.html' with order=order title='First Step'%}
+    <br><br>
+    {% if order.needs_transfer %}
         <table class="table">
             <thead>
             <tr>
-                <th colspan="2">Second Step</th>
+                <th colspan="2">Transfer</th>
             </tr>
             </thead>
+            <tbody>
             <tr>
-                <th>Price</th>
-                <td>{{ order.price }} {{ order.dest_currency_type }}</td>
+                <th>Currency</th>
+                <td>{{ order.get_transferred_currency.0 }} {{ order.get_transferred_currency.1 }}</td>
             </tr>
             <tr>
-                <th>Total</th>
-                <td>{{ order.get_second_step_total }} {{ order.dest_currency_type }}</td>
+                <th>Status</th>
+                <td>{{ order.get_transfer_status }}</td>
             </tr>
             <tr>
-                <th>Ordered At</th>
-                <td>{{ order.second_step_time|date }}</td>
+                <th>From</th>
+                <td>{{ order.get_account_type_display }}</td>
             </tr>
             <tr>
-                <th>Account</th>
-                <td>{{ order.second_step_account_type }}</td>
+                <th>To</th>
+                <td>{{ order.next_step.get_account_type_display }}</td>
             </tr>
+            </tbody>
         </table>
+            <br><br>
+    {% endif %}
 
+    {% if order.has_next_step %}
+        {% include 'trade/includes/order_step_detail_table.html' with order=order.next_step title='Second Step'%}
     {% endif %}
 
 
