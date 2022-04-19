@@ -7,10 +7,10 @@ from user.errors import NoAuthenticationInformation
 
 
 def transfer_request_view(request, pk):
+    order = request.user.orders.get(pk=pk)
     if request.method == 'POST':
         form = WalletAddressForm(request.POST)
         if form.is_valid():
-            order = request.user.orders.get(pk=pk)
             address = form.cleaned_data.get('deposit_wallet_address')
             order.deposit_wallet_address = address
             order.save()
@@ -37,7 +37,12 @@ def transfer_request_view(request, pk):
             return redirect('message_view')
     else:
         form = WalletAddressForm()
-    return render(request, 'trade/transfer_confirm.html', {'form': form})
+    context = {
+        'form': form,
+        'currency': order.get_source_currency_type_display(),
+        'account': order.next_step.get_account_type_display()
+    }
+    return render(request, 'trade/transfer_request.html', context=context)
 
 
 def transfer_confirm_view(request, pk):

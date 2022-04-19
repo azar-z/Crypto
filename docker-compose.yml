@@ -16,6 +16,7 @@ services:
       - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - redis
+      - db
 
 
   worker:
@@ -31,6 +32,7 @@ services:
     depends_on:
       - web
       - redis
+      - db
 
   celery-beat:
     build:
@@ -43,6 +45,7 @@ services:
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
+      - db
       - web
       - redis
       - worker
@@ -53,3 +56,20 @@ services:
     restart: always
     ports:
       - '6379:6379'
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=db-postgres
+      - POSTGRES_USER=zahra
+      - POSTGRES_PASSWORD=1234
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - "5432:5432"
+
+volumes:
+  db-volume:

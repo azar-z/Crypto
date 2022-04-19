@@ -159,8 +159,8 @@ class Exir(Account):
         best_sell = sells[0]
         best_buy = buys[0]
         return {
-            'bestSell': best_sell['price'],
-            'bestBuy': best_buy['price'],
+            'bestSell': round(float(best_sell['price']), 2),
+            'bestBuy': round(float(best_buy['price']), 2),
         }
 
     def request_withdraw(self, currency, amount, address):

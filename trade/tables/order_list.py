@@ -10,7 +10,7 @@ class OrderDataTable(tables.Table):
     price = tables.Column(verbose_name='Price')
     is_sell = tables.Column(verbose_name='Actions')
     id = tables.Column(verbose_name='')
-    created = tables.Column(verbose_name='Ordered In')
+    time = tables.Column(verbose_name='Ordered In')
     account_type = tables.Column(verbose_name='First Action At')
     next_step__account_type = tables.Column(verbose_name='Second Action At')
     status = tables.Column(verbose_name='First Action Status')
@@ -47,6 +47,6 @@ class OrderDataTable(tables.Table):
     class Meta:
         model = Order
         template_name = 'django_tables2/bootstrap-responsive.html'
-        fields = ['created', 'source_currency_amount', 'price', 'is_sell', 'account_type',
+        fields = ['time', 'source_currency_amount', 'price', 'is_sell', 'account_type',
                   'next_step__account_type', 'status', 'next_step__status', 'id']
 

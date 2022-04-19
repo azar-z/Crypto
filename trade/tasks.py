@@ -6,7 +6,7 @@ from user.errors import NoAuthenticationInformation
 
 @shared_task
 def order_os_to_od_task():
-    orders = Order.objects.filter(status='OS')
+    orders = Order.objects.filter(status='OS').exclude(owner=None)
     for order in orders:
         try:
             order.check_for_order_status()
@@ -16,7 +16,7 @@ def order_os_to_od_task():
 
 @shared_task
 def order_od_to_l_to_next_step_os_task():
-    orders = Order.objects.filter(status='OD')
+    orders = Order.objects.filter(status='OD').exclude(owner=None)
     for order in orders:
         if order.has_next_step():
             try:
@@ -29,7 +29,7 @@ def order_od_to_l_to_next_step_os_task():
 
 @shared_task
 def order_tos_to_td_to_next_step_os_task():
-    orders = Order.objects.filter(status='TOS')
+    orders = Order.objects.filter(status='TOS').exclude(owner=None)
     for order in orders:
         if order.has_next_step():
             try:
@@ -40,3 +40,8 @@ def order_tos_to_td_to_next_step_os_task():
                     order.next_step.order_transaction()
             except NoAuthenticationInformation:
                 pass
+
+
+@shared_task
+def update_golden_trades():
+    Order.save_golden_trades()

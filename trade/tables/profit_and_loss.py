@@ -1,4 +1,5 @@
 import django_tables2 as tables
+from django.urls import reverse
 from django.utils.html import format_html
 
 from trade.models import Order
@@ -26,6 +27,11 @@ class OrderProfitAndLossTable(tables.Table):
     next_step__price = tables.Column(verbose_name='Secondary Price')
     profit_or_loss = tables.Column(verbose_name='Profit Or Loss', accessor='get_profit_or_loss', footer=sum_footer)
     is_sell = tables.Column(verbose_name='Action')
+    id = tables.Column(verbose_name='')
+
+    def render_id(self, value, record):
+        href = reverse('order_detail', kwargs={'pk': value})
+        return format_html('<a class="btn btn-info" href="{0}">Details</a>', href)
 
     def render_is_sell(self, value, record):
         buy = '<span class="table-success">buy</span>'
@@ -54,4 +60,4 @@ class OrderProfitAndLossTable(tables.Table):
     class Meta:
         model = Order
         template_name = 'django_tables2/bootstrap-responsive.html'
-        fields = ['source_currency_amount', 'is_sell', 'price', 'next_step__price', 'profit_or_loss']
+        fields = ['source_currency_amount', 'is_sell', 'price', 'next_step__price', 'profit_or_loss', 'id']

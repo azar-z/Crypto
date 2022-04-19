@@ -4,35 +4,54 @@
 {% block title %} Compare Prices {% endblock %}
 
 {% block style %}
-        <link rel="stylesheet" type="text/css" href="{% static 'user/styles/compare_prices.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'trade/styles/compare_prices.css' %}">
 {% endblock %}
 
 {% block content %}
     <table class="table table-bordered">
-    <thead class="thead-dark">
-    <tr>
-        <th colspan="2">Currency</th>
-        <th>Nobitex</th>
-        <th>Wallex</th>
-        <th>Exir</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for currency_info in market_info %}
+        <thead class="thead-dark">
         <tr>
-        <th rowspan="2" class="table-dark">{{ currency_info.currency }}</th>
-        <td class="table-danger">Best Sell (Iran Rial)</td>
-        <td class="table-danger">{{ currency_info.info.nobitex.bestSell}}</td>
-        <td class="table-danger">{{ currency_info.info.wallex.bestSell}}</td>
-        <td class="table-danger">{{ currency_info.info.exir.bestSell}}</td>
+            <th colspan="2" class="currency-header">Currency</th>
+            <th>Nobitex</th>
+            <th>Wallex</th>
+            <th>Exir</th>
         </tr>
-        <tr class="table-success">
-        <td>Best Buy (Iran Rial)</td>
-        <td>{{ currency_info.info.nobitex.bestBuy}}</td>
-        <td>{{ currency_info.info.wallex.bestBuy}}</td>
-        <td>{{ currency_info.info.exir.bestBuy}}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
+        </thead>
+        <tbody>
+        {% for currency_info in market_info %}
+            <tr>
+                <th rowspan="2" class="table-dark">{{ currency_info.currency }}</th>
+                <td class="table-danger">Best Sell (Iran Rial)</td>
+                <td class="table-danger">
+                    <a href="{% url 'new_trade' %}?account_type=N&price={{ currency_info.info.nobitex.bestSell }}&source_currency_type={{ currency_info.currency }}">
+                        {{ currency_info.info.nobitex.bestSell }}
+                    </a></td>
+                <td class="table-danger">
+                    <a href="{% url 'new_trade' %}?account_type=W&price={{ currency_info.info.wallex.bestSell }}&source_currency_type={{ currency_info.currency }}">
+
+                        {{ currency_info.info.wallex.bestSell }}
+                    </a></td>
+                <td class="table-danger">
+                    <a href="{% url 'new_trade' %}?account_type=E&price={{ currency_info.info.exir.bestSell }}&source_currency_type={{ currency_info.currency }}">
+
+                        {{ currency_info.info.exir.bestSell }}</a></td>
+            </tr>
+            <tr class="table-success">
+                <td>Best Buy (Iran Rial)</td>
+                <td>
+                    <a href="{% url 'new_trade' %}?account_type=N&price={{ currency_info.info.nobitex.bestBuy }}&source_currency_type={{ currency_info.currency }}">
+
+                        {{ currency_info.info.nobitex.bestBuy }}</a></td>
+                <td>
+                    <a href="{% url 'new_trade' %}?account_type=W&price={{ currency_info.info.wallex.bestBuy }}&source_currency_type={{ currency_info.currency }}">
+
+                        {{ currency_info.info.wallex.bestBuy }}</a></td>
+                <td>
+                    <a href="{% url 'new_trade' %}?account_type=E&price={{ currency_info.info.exir.bestBuy }}&source_currency_type={{ currency_info.currency }}">
+
+                        {{ currency_info.info.exir.bestBuy }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
     </table>
 {% endblock %}

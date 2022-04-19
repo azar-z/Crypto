@@ -10,4 +10,4 @@ class ProfitAndLossFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = Order
-        fields = ['time', 'next_step__time']
+        fields = ['time', 'next_step__time', 'source_currency_type']

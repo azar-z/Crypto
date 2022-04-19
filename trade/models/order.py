@@ -8,7 +8,7 @@ from django.utils import timezone
 from trade.currencies import SOURCE_CURRENCIES, DEST_CURRENCIES, AccountOrderStatus
 from user.logics.accounts import get_account_based_on_type
 from user.models import BaseModel, User
-from user.models.account import ACCOUNT_TYPE_CHOICES
+from user.models.account import ACCOUNT_TYPE_CHOICES, Account
 
 ORDER_STATUS_CHOICES = (
     ('NO', 'Not started yet.'),
@@ -58,6 +58,11 @@ class Order(BaseModel):
 
     class Meta:
         ordering = ('-updated',)
+
+    def delete(self, using=None, keep_parents=False):
+        if self.has_next_step():
+            self.next_step.delete()
+        super(Order, self).delete()
 
     def get_absolute_url(self):
         return reverse('order_detail', kwargs={'pk': self.pk})
@@ -163,7 +168,8 @@ class Order(BaseModel):
     def get_profit_or_loss(self):
         if self.has_next_step():
             if self.is_sell:
-                profit_or_loss = (self.next_step.source_currency_amount - self.source_currency_amount) * self.next_step.price
+                profit_or_loss = (
+                                         self.next_step.source_currency_amount - self.source_currency_amount) * self.next_step.price
                 profit_or_loss = profit_or_loss * self.next_step.price
             else:
                 profit_or_loss = self.source_currency_amount * (self.next_step.price - self.price)
@@ -200,11 +206,10 @@ class Order(BaseModel):
         pass
 
     def set_owner(self, owner):
-        order = self
-        while order is not None:
-            order.owner = owner
-            order.save()
-            order = order.next_step
+        self.owner = owner
+        self.save()
+        if self.has_next_step():
+            self.next_step.set_owner(owner)
 
     def request_withdraw(self):
         account = self.get_account()
@@ -212,6 +217,61 @@ class Order(BaseModel):
         amount = self.source_currency_amount
         address = self.deposit_wallet_address
         return account.request_withdraw(currency, amount, address)
+
+    @staticmethod
+    def save_golden_trades():
+        golden_trades = Order.objects.filter(owner=None, previous_step=None)
+        for golden_trade in golden_trades:
+            golden_trade.delete()
+        market_info_of_all_currencies = Account.get_market_info_of_all()
+        for market_info in market_info_of_all_currencies:
+            Order._save_golden_trades_of_currency(market_info['currency'], market_info['info'])
+
+    @staticmethod
+    def _save_golden_trades_of_currency(currency, market_info):
+        for sub1 in Account.__subclasses__():
+            for sub2 in Account.__subclasses__():
+                if sub2 is not sub1:
+                    sub1_lowest_price = market_info[sub1.__name__.lower()]['bestBuy']
+                    sub2_highest_price = market_info[sub2.__name__.lower()]['bestSell']
+                    Order._save_trade_if_golden(first_account=sub1.get_type(), second_account=sub2.get_type(),
+                                                first_lowest_price=sub1_lowest_price,
+                                                second_highest_price=sub2_highest_price, source=currency)
+
+    @staticmethod
+    def _save_trade_if_golden(first_account, second_account, first_lowest_price, second_highest_price,
+                              source, dest='USDT'):
+        if first_lowest_price < second_highest_price:
+            profit_limit = round(second_highest_price / first_lowest_price - 1, 3)
+            if profit_limit > 0.002:
+                Order._create_golden_trade(source, dest, first_account, second_account, profit_limit, False,
+                                           first_lowest_price, second_highest_price)
+                Order._create_golden_trade(source, dest, second_account, first_account, profit_limit, True,
+                                           second_highest_price, first_lowest_price)
+
+    @staticmethod
+    def _create_golden_trade(source, dest, first_account, second_account, profit_limit, is_sell, first_price,
+                             second_price):
+        second_step = Order.objects.create(account_type=second_account, is_sell=not is_sell,
+                                           source_currency_type=source, dest_currency_type=dest, price=second_price)
+        second_step.save()
+        first_step = Order.objects.create(next_step=second_step, source_currency_type=source, dest_currency_type=dest,
+                                          account_type=first_account,
+                                          profit_limit=profit_limit, is_sell=is_sell, price=first_price)
+        first_step.save()
+
+    def get_form_initials(self):
+        return {
+            'source_currency_type': self.source_currency_type,
+            'is_sell': self.is_sell,
+            'account_type': self.account_type,
+            'price': round(float(self.price), 2),
+            'no_second_step': False,
+            'profit_limit': self.profit_limit,
+            'second_step_account_type': self.next_step.account_type,
+        }
+
+
 '''
 needed fields for two step order:
 owner, first_step_is_sell, price, account_type, second_step_account_type,

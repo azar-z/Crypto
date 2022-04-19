@@ -19,6 +19,7 @@ from django.urls import path
 from trade import views
 
 urlpatterns = [
+
     path('new/', views.NewTradeView.as_view(), name='new_trade'),
     path('prices/compare/', views.ComparePricesView.as_view(), name='compare_prices'),
     path('orderbook-and-trades/', views.get_orderbook_and_trades_view, name='get_orderbook_and_trades'),
@@ -29,6 +30,7 @@ urlpatterns = [
     path('transfer/cancel/<int:pk>/', views.transfer_cancel_view, name='transfer_cancel'),
     path('orders/', views.OrderListView.as_view(), name='order_list'),
     path('orders/<int:pk>/', views.OrderDetailView.as_view(), name='order_detail'),
+    path('home/', views.GoldenTrades.as_view(), name='home'),
 
     path('message/', views.message_view, name='message_view'),
 ]

@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django_tables2 import SingleTableMixin
 from django_filters import views as filter_views
 
-from trade.filters.profit_and_loss_filter import ProfitAndLossFilterSet
+from trade.filters.profit_and_loss import ProfitAndLossFilterSet
 from trade.models import Order
 from trade.tables.profit_and_loss import OrderProfitAndLossTable
 

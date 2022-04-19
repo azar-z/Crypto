@@ -1,1 +1,1 @@
-from crypto.settings.dev import *
+from crypto.settings.stage import *

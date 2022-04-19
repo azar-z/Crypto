@@ -139,8 +139,8 @@ class Nobitex(Account):
         response = cache.get(cache_key)
         response = response['stats'][source + '-' + dest]
         return {
-            'bestSell': round(float(response['bestSell'])),
-            'bestBuy': round(float(response['bestBuy'])),
+            'bestSell': round(float(response['bestSell']), 2),
+            'bestBuy': round(float(response['bestBuy']), 2),
         }
 
     def get_wallet_id(self, currency):

@@ -10,7 +10,6 @@ from django.utils.http import urlsafe_base64_decode
 from user.forms.signup import SignupForm
 from user.logics.signup import signup_logic
 from user.models import User
-from user.producer import publish
 from user.tokens import account_activation_token
 
 

@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -27,6 +29,19 @@ class NewTradeView(generic.CreateView):
             messages.error(self.request, 'We need valid authentication information for ordering a transaction')
             return redirect('accounts', account_type=order.account_type)
         return response
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if 'initial' in self.request.GET:
+            data = self.request.GET['initial']
+            data = json.loads(data)
+            initial.update(data)
+        elif 'account_type' in self.request.GET:
+            initial['account_type'] = self.request.GET['account_type']
+            initial['second_step_account_type'] = self.request.GET['account_type']
+            initial['price'] = self.request.GET['price']
+            initial['source_currency_type'] = self.request.GET['source_currency_type']
+        return initial
 
 
 def get_orderbook_and_trades_view(request):

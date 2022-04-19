@@ -129,7 +129,7 @@ class Account(BaseModel):
         pass
 
     @staticmethod
-    def get_market_info_of_all(dest):
+    def get_market_info_of_all(dest='USDT'):
         market_info = []
         for currency_tuple in SOURCE_CURRENCIES:
             currency = currency_tuple[0]
@@ -175,6 +175,10 @@ class Account(BaseModel):
 
     def get_order_status(self, order_id):
         pass
+
+    @classmethod
+    def get_type(cls):
+        return cls.__name__[0].upper()
 
     class Meta:
         abstract = True

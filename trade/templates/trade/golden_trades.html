@@ -1,0 +1,61 @@
+{% extends 'user/base_template.html' %}
+{% load django_tables2 %}
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_css %}
+{% load crispy_forms_tags %}
+
+{% block title %} Home {% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="{% static 'user/styles/home_counter.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/Counter-Up/1.0.0/jquery.counterup.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{% static 'user/js/home_counter.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <section class="wow fadeIn animated" style="visibility: visible; animation-name: fadeIn;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-sm-6 text-center counter-section wow fadeInUp animated"
+                     data-wow-duration="1200ms"
+                     style="visibility: visible; animation-duration: 1200ms; animation-name: fadeInUp;"><i
+                        class="fa fa-user medium-icon"></i> <span class="timer counter alt-font appear" data-to="600"
+                                                                  data-speed="7000">{{ user_number }}</span> <span
+                        class="counter-title">Clients Served</span></div>
+
+                <div class="col-md-3 col-sm-6 text-center counter-section wow fadeInUp animated"
+                     data-wow-duration="1200ms"
+                     style="visibility: visible; animation-duration: 1200ms; animation-name: fadeInUp;"><i
+                        class="fa fa-square medium-icon"></i> <span class="timer counter alt-font appear" data-to="600"
+                                                                  data-speed="7000">{{ order_number }}</span> <span
+                        class="counter-title">Orders</span></div>
+
+                <div class="col-md-3 col-sm-6 text-center counter-section wow fadeInUp animated"
+                     data-wow-duration="1200ms"
+                     style="visibility: visible; animation-duration: 1200ms; animation-name: fadeInUp;"><i
+                        class="fa fa-plus-square medium-icon"></i> <span class="timer counter alt-font appear" data-to="600"
+                                                                  data-speed="7000">{{ number_of_profitable_orders }}</span>
+                    <span
+                            class="counter-title">Profitable Orders</span></div>
+
+                <div class="col-md-3 col-sm-6 text-center counter-section wow fadeInUp animated"
+                     data-wow-duration="1200ms"
+                     style="visibility: visible; animation-duration: 1200ms; animation-name: fadeInUp;"><i
+                        class="fa fa-money medium-icon"></i> <span class="timer counter alt-font appear" data-to="600"
+                                                                  data-speed="7000">{{ total_profit_in_million }} </span> <span
+                        class="counter-title">Million USDT Profit</span></div>
+            </div>
+        </div>
+    </section>
+    <h3 style="margin-top: 300px">Suggestions:</h3>
+    {% include 'trade/includes/filter.html' %}
+    {% include 'trade/includes/order_table.html' %}
+{% endblock %}

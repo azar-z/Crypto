@@ -5,6 +5,7 @@ from .alerts import *
 from .transfer_request_and_confirm import *
 from .order_list import *
 from .order_detail import *
+from .golden_trades import *
 
 
 def message_view(request):

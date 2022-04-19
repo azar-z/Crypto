@@ -151,8 +151,8 @@ class Wallex(Account):
         response = cache.get(cache_key)
         response = response['result']['symbols'][market_symbol]['stats']
         return {
-            'bestSell': round(float(response['24h_highPrice'])) * 10,
-            'bestBuy': round(float(response['24h_lowPrice'])) * 10,
+            'bestSell': round(float(response['24h_highPrice']), 2),
+            'bestBuy': round(float(response['24h_lowPrice']), 2),
         }
 
     def get_order_status(self, order_id):

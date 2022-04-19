@@ -9,6 +9,7 @@ class TransferAlertsTable(tables.Table):
     account_type = tables.Column(verbose_name='From')
     next_step__account_type = tables.Column(verbose_name='To')
     confirm_or_cancel = tables.Column(verbose_name='', accessor='get_profit_or_loss')
+    id = tables.Column(verbose_name='')
 
     def render_confirm_or_cancel(self, value, record):
         confirm_page = reverse('transfer_request', kwargs={'pk': record.pk})
@@ -20,7 +21,12 @@ class TransferAlertsTable(tables.Table):
     def render_currency(self, value, record):
         return format_html('<span>{0} {1}</span>', value[0], value[1])
 
+    def render_id(self, value, record):
+        detail_page = reverse('order_detail', kwargs={'pk': record.pk})
+        detail_button = "<a class='btn btn-info' href={0}>Order Details</span>".format(detail_page)
+        return format_html(detail_button)
+
     class Meta:
         model = Order
         template_name = 'django_tables2/bootstrap-responsive.html'
-        fields = ['currency', 'account_type', 'next_step__account_type', 'confirm_or_cancel']
+        fields = ['currency', 'account_type', 'next_step__account_type', 'confirm_or_cancel', 'id']
