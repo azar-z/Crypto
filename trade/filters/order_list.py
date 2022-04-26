@@ -12,8 +12,10 @@ class OrderListFilterSet(django_filters.FilterSet):
         super(OrderListFilterSet, self).__init__(*args, **kwargs)
         self.filters['account_type'].label = "First Action In:"
         self.filters['next_step__account_type'].label = "Second Action In:"
-
+        self.filters['status'].label = "First Action Status:"
+        self.filters['next_step__status'].label = "Second Action Status:"
 
     class Meta:
         model = Order
-        fields = ['source_currency_type', 'account_type', 'next_step__account_type', 'time', 'time_lt']
+        fields = ['source_currency_type', 'account_type', 'next_step__account_type', 'time', 'time_lt',
+                  'status', 'next_step__status']

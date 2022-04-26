@@ -12,6 +12,8 @@ class OrderDetailView(DetailView):
     context_object_name = 'order'
 
     def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Order.objects.all()
         return self.request.user.orders.all()
 
 

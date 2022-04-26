@@ -2,7 +2,7 @@ import requests
 from celery import shared_task
 from django.core.cache import cache
 
-from trade.currencies import SOURCE_CURRENCIES, DEST_CURRENCIES
+from trade.utils import SOURCE_CURRENCIES, DEST_CURRENCIES
 from user.models import Nobitex
 
 
@@ -49,7 +49,6 @@ def _cache_market_info_task(source, dest):
 
 @shared_task
 def cache_market_info_task():
-    print('----------------------------------------------start---------------------------------------------------')
     for source_currency in SOURCE_CURRENCIES:
         source = source_currency[0]
         for dest_currency in DEST_CURRENCIES:
@@ -57,4 +56,3 @@ def cache_market_info_task():
             source = Nobitex.get_currency_symbol(source)
             dest = Nobitex.get_currency_symbol(dest)
             _cache_market_info_task.delay(source, dest)
-    print('----------------------------------------------end---------------------------------------------------')

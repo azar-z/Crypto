@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 import user.validators.account as validators
-from trade.currencies import SOURCE_CURRENCIES
+from trade.utils import SOURCE_CURRENCIES
 from user.errors import NoAuthenticationInformation
 from user.models.base_model import BaseModel
 from user.models.user import User
@@ -24,11 +24,17 @@ NUMBER_OF_ROWS = 6
 class Account(BaseModel):
     owner = models.OneToOneField(User, on_delete=models.CASCADE, validators=[validators.validate_not_staff],
                                  related_name='%(class)s_account')
-    needs_withdraw_confirmation = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.__class__.__name__ + '_' + self.owner.username
 
     @staticmethod
     def is_orderbook_in_toman():
         return True
+
+    @staticmethod
+    def needs_withdraw_confirmation():
+        return False
 
     @staticmethod
     def get_toman_symbol():
@@ -127,6 +133,14 @@ class Account(BaseModel):
     @classmethod
     def get_market_info(cls, source, dest):
         pass
+
+    @classmethod
+    def get_average_market_price(cls, source, dest):
+        market_info = cls.get_market_info(source, dest)
+        market_lowest_price = market_info['bestBuy']
+        market_highest_price = market_info['bestSell']
+        average_market_price = (market_highest_price + market_lowest_price) / 2
+        return average_market_price
 
     @staticmethod
     def get_market_info_of_all(dest='USDT'):

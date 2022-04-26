@@ -5,8 +5,6 @@ from django.urls import reverse
 import user.validators.user as validators
 from user.models.base_model import BaseModel
 
-from user.producer import publish
-
 
 class User(AbstractUser, BaseModel):
     phone_number = models.CharField(validators=[validators.phone_regex], max_length=17, default='9102164912')
@@ -21,7 +19,7 @@ class User(AbstractUser, BaseModel):
             'receiver': self.phone_number,
             'text': text
         }
-        publish('send_sms', data)
+        # publish('send_sms', data)
 
     def get_orders(self):
         pass

@@ -4,7 +4,6 @@ from trade.models import Order
 
 
 class GoldenTradesFilterSet(django_filters.FilterSet):
-    profit_limit = django_filters.NumberFilter(lookup_expr='gt')
 
     def __init__(self, *args, **kwargs):
         super(GoldenTradesFilterSet, self).__init__(*args, **kwargs)
@@ -13,4 +12,4 @@ class GoldenTradesFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = Order
-        fields = ['source_currency_type', 'account_type', 'next_step__account_type', 'profit_limit']
+        fields = ['source_currency_type', 'account_type', 'next_step__account_type']

@@ -18,9 +18,9 @@ class GoldenTradesTable(tables.Table):
     is_sell = tables.Column(verbose_name='First Action')
     next_step__is_sell = tables.Column(verbose_name='Second Action')
     price = tables.Column(verbose_name='With price (USDT)')
-    next_step__price = tables.Column(verbose_name='With price (USDT)')
+    profit_limit = tables.Column(verbose_name='With price (USDT)')
     next_step__account_type = tables.Column(verbose_name='In')
-    profit_limit = tables.Column(verbose_name='Profit')
+    profit = tables.Column(accessor='get_profit_percent')
     accept = tables.Column(verbose_name='', accessor='get_form_initials')
 
     def render_accept(self, value, record):
@@ -34,9 +34,12 @@ class GoldenTradesTable(tables.Table):
     def render_next_step__is_sell(self, value, record):
         return get_html_format_of_action(value)
 
+    def render_profit(self, value, record):
+        return '{} %'.format(value)
+
     class Meta:
         model = Order
         template_name = 'django_tables2/bootstrap-responsive.html'
         fields = ['source_currency_type', 'is_sell', 'account_type', 'price',
-                  'next_step__is_sell', 'next_step__account_type', 'next_step__price', 'profit_limit',
+                  'next_step__is_sell', 'next_step__account_type', 'profit_limit', 'profit',
                   'accept']

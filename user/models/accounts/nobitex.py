@@ -6,17 +6,20 @@ import requests
 from django.core.cache import cache
 from django.db import models
 
-from trade.currencies import ALL_CURRENCIES, AccountOrderStatus
+from trade.utils import ALL_CURRENCIES, AccountOrderStatus
 from user.models import Account
 
 
 class Nobitex(Account):
     token = models.CharField(max_length=100)
-    Account._meta.get_field('needs_withdraw_confirmation').default = True
 
     @staticmethod
     def is_orderbook_in_toman():
         return False
+
+    @staticmethod
+    def needs_withdraw_confirmation():
+        return True
 
     @staticmethod
     def get_currency_symbol(currency):
@@ -92,12 +95,10 @@ class Nobitex(Account):
             "type": side,
             "srcCurrency": self.get_currency_symbol(source),
             "dstCurrency": self.get_currency_symbol(dest),
-            "amount": float(amount),
-            "price": int(price)})
-        headers = self.get_authentication_headers().update({
-            'content-type': 'application/json',
-        })
-        url = "https://testnetapi.nobitex.ir/market/orders/add"
+            "amount": str(amount),
+            "price": str(price)})
+        headers = self.get_authentication_headers()
+        url = "https://api.nobitex.ir/market/orders/add"
         response = requests.post(url, headers=headers, data=data)
         response = response.json()
         try:

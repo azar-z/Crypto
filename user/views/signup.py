@@ -36,7 +36,7 @@ def activate_view(request, uidb64, token):
         user.is_active = True
         user.save()
         login(request, user)
-        messages.success(request, 'Email confirmation was successful. Now you can login to your account.')
+        messages.success(request, 'Email confirmation was successful. Welcome to crypto.')
     else:
         messages.error(request, 'Activation link is invalid!')
     return redirect('home')

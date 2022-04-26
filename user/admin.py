@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 
 from trade.models import Order
 from user.models import User, Nobitex, Wallex, Exir
@@ -6,21 +8,20 @@ from user.models import User, Nobitex, Wallex, Exir
 
 class NobitexInline(admin.TabularInline):
     model = Nobitex
-    exclude = ['token']
 
 
 class WallexInline(admin.TabularInline):
     model = Wallex
-    exclude = ['token']
 
 
 class ExirInline(admin.TabularInline):
     model = Exir
-    exclude = ['api_key', 'api_signature']
 
 
 class OrderInline(admin.TabularInline):
     model = Order
+    fields = ['source_currency_type', 'time']
+    show_change_link = True
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -33,8 +34,26 @@ class UserAdmin(admin.ModelAdmin):
     )
 
 
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['name', 'next_step_link', 'previous_step_link']
+
+    def name(self, obj):
+        return str(obj)
+
+    def link_to_related_step(self, related_step):
+        if related_step is None:
+            return '-'
+        link = reverse("admin:trade_order_change", args=[related_step.id])
+        return format_html('<a href="{}">{}</a>', link, related_step)
+
+    def next_step_link(self, obj):
+        return self.link_to_related_step(obj.next_step)
+    next_step_link.allow_tags = True
+
+    def previous_step_link(self, obj):
+        return self.link_to_related_step(obj.previous_step)
+    previous_step_link.allow_tags = True
+
+
 admin.site.register(User, UserAdmin)
-admin.site.register(Nobitex)
-admin.site.register(Wallex)
-admin.site.register(Exir)
-admin.site.register(Order)
+admin.site.register(Order, OrderAdmin)

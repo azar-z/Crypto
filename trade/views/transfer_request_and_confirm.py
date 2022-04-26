@@ -21,7 +21,7 @@ def transfer_request_view(request, pk):
                 messages.error(request,
                                'We need your authentication information for transferring currencies from this account')
                 return redirect('accounts', account_type=order.account_type)
-            need_confirmation = account.needs_withdraw_confirmation
+            need_confirmation = account.needs_withdraw_confirmation()
             if response:
                 messages.success(request, 'Transfer request was successful.')
                 if not need_confirmation:

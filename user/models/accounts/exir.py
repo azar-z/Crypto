@@ -7,7 +7,7 @@ import requests
 from django.core.cache import cache
 from django.db import models
 
-from trade.currencies import ALL_CURRENCIES, AccountOrderStatus
+from trade.utils import ALL_CURRENCIES, AccountOrderStatus
 from user.models import Account
 
 

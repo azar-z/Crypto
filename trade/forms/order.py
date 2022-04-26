@@ -7,6 +7,14 @@ from user.models.account import ACCOUNT_TYPE_CHOICES
 SELL_OR_BUY = ((True, '  sell    '), (False, '    buy   '))
 
 
+def clean_limit(is_greater, is_lower, name):
+    if is_greater:
+        raise ValidationError(name + ' limit should be less than price.')
+    if is_lower:
+        raise ValidationError(name + ' limit should be greater than price.')
+    return
+
+
 class OrderForm(forms.ModelForm):
     is_sell = forms.TypedChoiceField(
         label='',
@@ -16,11 +24,12 @@ class OrderForm(forms.ModelForm):
         required=True
     )
     second_step_account_type = forms.ChoiceField(widget=forms.Select, choices=ACCOUNT_TYPE_CHOICES, required=False,
-                                                 label='Where should we track profit and loss limits?')
+                                                 label='Destination')
     no_second_step = forms.BooleanField(label='Doesn\'t have any limits.', required=False)
 
     def __init__(self, *args, **kwargs):
         super(OrderForm, self).__init__(*args, **kwargs)
+        self.fields['account_type'].label = 'Source'
         second_step_fields = ['second_step_account_type', 'profit_limit', 'loss_limit']
         for field in second_step_fields:
             self.fields[field].widget.attrs.update({'class': 'second_step_field'})
@@ -41,10 +50,30 @@ class OrderForm(forms.ModelForm):
             order.save()
         return order
 
+    def clean_profit_limit(self):
+        profit_limit = self.cleaned_data['profit_limit']
+        if profit_limit is None:
+            return profit_limit
+        price = self.cleaned_data['price']
+        is_sell = self.cleaned_data['is_sell']
+        clean_limit(is_sell and profit_limit >= price, not is_sell and profit_limit <= price, 'Profit')
+        return profit_limit
+
+    def clean_loss_limit(self):
+        loss_limit = self.cleaned_data['loss_limit']
+        if loss_limit is None:
+            return loss_limit
+        price = self.cleaned_data['price']
+        is_sell = self.cleaned_data['is_sell']
+        clean_limit(not is_sell and loss_limit >= price, is_sell and loss_limit <= price, 'Loss')
+        return loss_limit
+
     class Meta:
         model = Order
         fields = ['source_currency_type', 'is_sell', 'account_type', 'source_currency_amount', 'price',
-                  'no_second_step',
-                  'profit_limit', 'loss_limit', 'second_step_account_type']
+                  'no_second_step', 'second_step_account_type',
+                  'profit_limit', 'loss_limit']
+
+
 
 

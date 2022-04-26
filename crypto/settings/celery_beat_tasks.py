@@ -3,9 +3,7 @@ TRADES_UPDATE_RATE = 10.0
 MARKET_UPDATE_RATE = 30.0
 
 
-ORDER_DONE_UPDATE_RATE = 60.0
-CHECK_LIMIT_UPDATE_RATE = 300.0
-MOVE_DONE_UPDATE_RATE = 300.0
+ORDER_UPDATE_STATUS_RATE = 60.0
 
 UPDATE_GOLDEN_TRADES_RATE = 100.0
 
@@ -69,36 +67,21 @@ CELERY_BEAT_SCHEDULE = {
         },
     },
 
-    ################################## order update tasks ###############################
+    ################################## order update status tasks###############################
 
-    'os_to_od': {
-        'task': 'trade.tasks.order_os_to_od_task',
-        'schedule': ORDER_DONE_UPDATE_RATE,
+    'order_update_status': {
+        'task': 'trade.tasks.order_update_status_task',
+        'schedule': ORDER_UPDATE_STATUS_RATE,
         'options': {
-            'expires': ORDER_DONE_UPDATE_RATE / 2,
+            'expires': ORDER_UPDATE_STATUS_RATE / 2,
         },
     },
 
-    'od_to_l_to_next_step_os': {
-        'task': 'trade.tasks.order_od_to_l_to_next_step_os_task',
-        'schedule': CHECK_LIMIT_UPDATE_RATE,
-        'options': {
-            'expires': CHECK_LIMIT_UPDATE_RATE / 2,
-        },
-    },
-
-    'tos_to_td_to_next_step_os': {
-        'task': 'trade.tasks.order_tos_to_td_to_next_step_os_task',
-        'schedule': MOVE_DONE_UPDATE_RATE,
-        'options': {
-            'expires': MOVE_DONE_UPDATE_RATE / 2,
-        },
-    },
 
     ################################## golden trade task ###############################
 
     'update_golden_trades': {
-        'task': 'trade.tasks.update_golden_trades',
+        'task': 'trade.tasks.update_golden_trades_task',
         'schedule': UPDATE_GOLDEN_TRADES_RATE,
         'options': {
             'expires': UPDATE_GOLDEN_TRADES_RATE / 2,

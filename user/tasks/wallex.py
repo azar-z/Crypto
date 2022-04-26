@@ -2,7 +2,7 @@ import requests
 from celery import shared_task
 from django.core.cache import cache
 
-from trade.currencies import SOURCE_CURRENCIES, DEST_CURRENCIES
+from trade.utils import SOURCE_CURRENCIES, DEST_CURRENCIES
 from user.models import Wallex
 
 
