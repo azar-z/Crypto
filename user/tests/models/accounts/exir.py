@@ -1,20 +1,4 @@
-import datetime
-import json
-from decimal import Decimal
-from operator import itemgetter
-
-import requests
-from django.core.cache import cache
-from django.db import models
-
-from trade.utils import ALL_CURRENCIES, AccountOrderStatus
-from user.models import Account
-
-
-class Exir(Account):
-    api_key = models.CharField(max_length=200)
-    api_signature = models.CharField(max_length=200)
-    api_expires = models.CharField(max_length=200)
+'''
 
     @staticmethod
     def get_currency_symbol(currency):
@@ -186,3 +170,4 @@ class Exir(Account):
         except KeyError:
             return AccountOrderStatus.CANCELLED
 
+'''

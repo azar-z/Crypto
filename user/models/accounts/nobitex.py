@@ -1,6 +1,4 @@
-import datetime
 import json
-from decimal import Decimal
 
 import requests
 from django.core.cache import cache
@@ -9,13 +7,12 @@ from django.db import models
 from trade.utils import ALL_CURRENCIES, AccountOrderStatus
 from user.models import Account
 
+API_DOMAIN = 'https://testnetapi.nobitex.ir'
+# API_DOMAIN = 'https://api.nobitex.ir'
+
 
 class Nobitex(Account):
     token = models.CharField(max_length=100)
-
-    @staticmethod
-    def is_orderbook_in_toman():
-        return False
 
     @staticmethod
     def needs_withdraw_confirmation():
@@ -23,10 +20,7 @@ class Nobitex(Account):
 
     @staticmethod
     def get_currency_symbol(currency):
-        if currency == 'IRR':
-            return 'rls'
-        else:
-            return currency.lower()
+        return currency.lower()
 
     @staticmethod
     def get_raw_orderbook(market_symbol, is_bids):
@@ -52,7 +46,7 @@ class Nobitex(Account):
 
     @staticmethod
     def get_price_from_raw_order(raw_order):
-        return Decimal(raw_order[0])
+        return float(raw_order[0])
 
     @staticmethod
     def get_size_from_raw_order(raw_order):
@@ -60,18 +54,14 @@ class Nobitex(Account):
 
     @staticmethod
     def get_price_from_raw_trade(raw_trade):
-        return Decimal(raw_trade['price'])
+        return float(raw_trade['price'])
 
     @staticmethod
     def get_size_from_raw_trade(raw_trade):
         return float(raw_trade['volume'])
 
-    @staticmethod
-    def get_time_from_raw_trade(raw_trade):
-        return datetime.datetime.utcfromtimestamp(int(raw_trade['time']))
-
     def has_authentication_information(self):
-        url = "https://api.nobitex.ir/users/profile"
+        url = API_DOMAIN + "/users/profile"
         headers = {
             'Authorization': 'Token ' + self.token,
         }
@@ -98,7 +88,7 @@ class Nobitex(Account):
             "amount": str(amount),
             "price": str(price)})
         headers = self.get_authentication_headers()
-        url = "https://api.nobitex.ir/market/orders/add"
+        url = API_DOMAIN + "/market/orders/add"
         response = requests.post(url, headers=headers, data=data)
         response = response.json()
         try:
@@ -108,12 +98,11 @@ class Nobitex(Account):
         except KeyError:
             return False
 
-
     def get_balance(self, currency):
         cache_key = 'nobitex_balance_' + currency + '_' + str(self.id)
         if cache_key not in cache:
             data = json.dumps({"currency": self.get_currency_symbol(currency)})
-            url = "https://api.nobitex.ir/users/wallets/balance"
+            url = API_DOMAIN + "/users/wallets/balance"
             response = requests.post(url, headers=self.get_authentication_headers(), data=data)
             response = response.json()
             cache.set(cache_key, response, timeout=300)
@@ -145,7 +134,7 @@ class Nobitex(Account):
         }
 
     def get_wallet_id(self, currency):
-        url = 'https://api.nobitex.ir/v2/wallets'
+        url = API_DOMAIN + '/v2/wallets'
         headers = self.get_authentication_headers()
         currency = self.get_currency_symbol(currency)
         data = {"currencies": currency}
@@ -157,7 +146,7 @@ class Nobitex(Account):
             return False
 
     def _request_withdraw(self, wallet, amount, address):
-        url = 'https://api.nobitex.ir/users/wallets/withdraw'
+        url = API_DOMAIN + '/users/wallets/withdraw'
         headers = self.get_authentication_headers()
         data = {
             "wallet": wallet,
@@ -178,7 +167,7 @@ class Nobitex(Account):
         return response
 
     def confirm_withdraw(self, withdraw_id, otp):
-        url = 'https://api.nobitex.ir/users/wallets/withdraw-confirm'
+        url = API_DOMAIN + '/users/wallets/withdraw-confirm'
         headers = self.get_authentication_headers()
         data = {
             "withdraw": withdraw_id,
@@ -191,7 +180,7 @@ class Nobitex(Account):
             return False
 
     def get_order_status(self, order_id):
-        url = 'https://api.nobitex.ir/market/orders/status'
+        url = API_DOMAIN + '/market/orders/status'
         headers = self.get_authentication_headers()
         data = {
             'id': int(order_id),

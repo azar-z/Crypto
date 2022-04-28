@@ -5,7 +5,7 @@ from trade.models import Order
 
 @shared_task
 def order_update_status_task():
-    Order.update_status()
+    Order.update_status_of_all_orders()
 
 
 @shared_task

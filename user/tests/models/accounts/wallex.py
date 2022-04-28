@@ -1,18 +1,4 @@
-import datetime
-import json
-from decimal import Decimal
-
-import requests
-from django.core.cache import cache
-from django.db import models
-
-from trade.utils import ALL_CURRENCIES, AccountOrderStatus
-from user.models import Account
-
-
-class Wallex(Account):
-    token = models.CharField(max_length=100)
-
+'''
     def get_token(self, email, password):
         pass  # throw user
 
@@ -153,3 +139,4 @@ class Wallex(Account):
 
     def get_order_status(self, order_id):
         return AccountOrderStatus.CANCELLED
+'''

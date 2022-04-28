@@ -22,7 +22,8 @@ class NewTradeView(generic.CreateView):
     def form_valid(self, form):
         response = super(NewTradeView, self).form_valid(form)
         order = self.object
-        order.set_owner(self.request.user)
+        order.owner = self.request.user
+        order.save()
         try:
             order.order_transaction()
         except NoAuthenticationInformation:

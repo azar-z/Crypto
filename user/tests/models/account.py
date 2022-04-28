@@ -1,51 +1,5 @@
-from operator import itemgetter
 
-from django.db import models
-from django.utils import timezone
-
-import user.validators.account as validators
-from trade.utils import SOURCE_CURRENCIES
-from user.errors import NoAuthenticationInformation
-from user.models.base_model import BaseModel
-from user.models.user import User
-
-ACCOUNT_TYPE_CHOICES = (
-    ('N', "Nobitex"),
-    ('W', "Wallex"),
-    ('E', "Exir"),
-)
-
-NUMBER_OF_ROWS = 6
-
-# source = BTC
-# dest = IRR
-
-
-class Account(BaseModel):
-    owner = models.OneToOneField(User, on_delete=models.CASCADE, validators=[validators.validate_not_staff],
-                                 related_name='%(class)s_account')
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return self.__class__.__name__ + '_' + self.owner.username
-
-    @staticmethod
-    def needs_withdraw_confirmation():
-        return False
-
-    @staticmethod
-    def get_currency_symbol(currency):
-        pass
-
-    @classmethod
-    def get_market_symbol(cls, source, dest):
-        return source + dest
-
-    @staticmethod
-    def get_raw_orderbook(market_symbol, is_sell):
-        pass
+'''
 
     @classmethod
     def get_orderbook(cls, market_symbol, is_bids):
@@ -73,14 +27,6 @@ class Account(BaseModel):
             return orders[-NUMBER_OF_ROWS:]
         return orders[:NUMBER_OF_ROWS]
 
-    @staticmethod
-    def get_price_from_raw_order(raw_order):
-        return 0
-
-    @staticmethod
-    def get_size_from_raw_order(raw_order):
-        return 0
-
     @classmethod
     def get_trades(cls, market_symbol, is_sell):
         raw_trades = cls.get_raw_trades(market_symbol, is_sell)[:NUMBER_OF_ROWS]
@@ -107,26 +53,6 @@ class Account(BaseModel):
             return trades[-NUMBER_OF_ROWS:]
         return trades[:NUMBER_OF_ROWS]
 
-    @staticmethod
-    def get_raw_trades(market_symbol, is_sell):
-        pass
-
-    @staticmethod
-    def get_price_from_raw_trade(raw_trade):
-        return 0
-
-    @staticmethod
-    def get_size_from_raw_trade(raw_trade):
-        return 0
-
-    @staticmethod
-    def get_time_from_raw_trade(raw_trade):
-        return timezone.now()
-
-    @classmethod
-    def get_market_info(cls, source, dest):
-        pass
-
     @classmethod
     def get_average_market_price(cls, source, dest):
         market_info = cls.get_market_info(source, dest)
@@ -149,40 +75,13 @@ class Account(BaseModel):
             market_info.append({'currency': currency, 'info': _market_info})
         return market_info
 
-    @staticmethod
-    def raise_authentication_expired_exception():
-        raise NoAuthenticationInformation('No authentication information.')
-
-    def get_authentication_headers(self):
-        pass
-
-    def new_order(self, source, dest, amount, price, is_sell):
-        pass
-
-    def get_balance(self, currency):
-        pass
-
-    def get_balance_of_all_currencies(self):
-        pass
-
-    def has_authentication_information(self):
-        pass
-
-    def request_withdraw(self, currency, amount, address):
-        return False
-
-    def confirm_withdraw(self, withdraw_id, otp):
-        return False
-
     @classmethod
     def make_an_account_for_user(cls, user):
         account = cls.objects.create(owner=user)
         account.save()
         return account
 
-    def get_order_status(self, order_id):
-        pass
-
     @classmethod
     def get_type(cls):
         return cls.__name__[0].upper()
+'''

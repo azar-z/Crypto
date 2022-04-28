@@ -19,6 +19,8 @@ ORDER_STATUS_CHOICES = (
     ('TD', 'Transaction is done. Transfer is done.'),
 )
 
+GOLDEN_TRADE_PROFIT_LIMIT_PERCENT = 2
+
 '''
 possible ways:
 1. FOU
@@ -65,6 +67,8 @@ class Order(BaseModel):
 
     def save(self, *args, **kwargs):
         if self.has_next_step():
+            if self.owner != self.next_step.owner:
+                self.next_step.owner = self.owner
             self.next_step.save()
         super(Order, self).save(*args, **kwargs)
 
@@ -98,13 +102,13 @@ class Order(BaseModel):
             self.status = 'OU'
         self.save()
 
-    def update_status_based_on_account_data(self):
+    def update_transaction_status(self):
         account = self.get_account()
         account_order_status = account.get_order_status(self.id_in_account)
         self.status = self.get_status_based_on_account_order_status(account_order_status)
         self.save()
 
-    def check_limits(self, market_price):
+    def _check_limits(self, market_price):
         got_to_profit_limit = self._check_profit_limit(market_price)
         if not got_to_profit_limit:
             got_to_loss_limit = self._check_loss_limit(market_price)
@@ -147,22 +151,18 @@ class Order(BaseModel):
 
     def check_for_enough_balance(self):
         account = self.get_account()
-        if self.is_sell:
-            balance = account.get_balance(self.source_currency_type)
-            amount = self.source_currency_amount
-        else:
-            balance = account.get_balance(self.dest_currency_type)
-            amount = self.get_total()
-        if balance >= amount and self.status == 'TOS':
+        spent_currency = self.get_spent_currency()
+        spent_currency_amount = spent_currency[0]
+        spent_currency_type = spent_currency[1]
+        spent_currency_balance = account.get_balance(spent_currency_type)
+        if spent_currency_balance >= spent_currency_amount:
             return True
         return False
 
     def get_profit_or_loss(self):
         if self.has_next_step():
             if self.is_sell:
-                profit_or_loss = (
-                                         self.next_step.source_currency_amount - self.source_currency_amount) * self.next_step.price
-                profit_or_loss = profit_or_loss * self.next_step.price
+                profit_or_loss = (self.next_step.source_currency_amount - self.source_currency_amount) * self.next_step.price
             else:
                 profit_or_loss = self.source_currency_amount * (self.next_step.price - self.price)
             currency = self.dest_currency_type
@@ -173,8 +173,14 @@ class Order(BaseModel):
     def get_total(self):
         return round(self.source_currency_amount * self.price, 2)
 
-    def get_transferred_currency(self):
+    def get_gained_currency(self):
         if self.is_sell:
+            return self.get_total(), self.dest_currency_type
+        else:
+            return self.source_currency_amount, self.source_currency_type
+
+    def get_spent_currency(self):
+        if not self.is_sell:
             return self.get_total(), self.dest_currency_type
         else:
             return self.source_currency_amount, self.source_currency_type
@@ -194,18 +200,13 @@ class Order(BaseModel):
         else:
             return 'Not needed'
 
-    def set_owner(self, owner):
-        self.owner = owner
-        self.save()
-        if self.has_next_step():
-            self.next_step.set_owner(owner)
-
     def request_withdraw(self):
         account = self.get_account()
-        currency = self.source_currency_type
-        amount = self.source_currency_amount
+        currency = self.get_gained_currency()
+        currency_amount = currency[0]
+        currency_type = currency[1]
         address = self.deposit_wallet_address
-        return account.request_withdraw(currency, amount, address)
+        return account.request_withdraw(currency_type, currency_amount, address)
 
     def get_profit_percent(self):
         if self.profit_limit > self.price:
@@ -214,7 +215,7 @@ class Order(BaseModel):
         else:
             lower_price = self.profit_limit
             higher_price = self.price
-        return round((higher_price - lower_price) / lower_price * 100, 2)
+        return round((higher_price / lower_price) * 100 - 100, 2)
 
     def get_form_initials(self):
         return {
@@ -227,6 +228,37 @@ class Order(BaseModel):
             'second_step_account_type': self.next_step.account_type,
         }
 
+    def update_status(self):
+        if self.status == 'OS':
+            self.update_transaction_status()
+        if self.has_next_step():
+            if self.status == 'OD':
+                self.check_limits()
+            if not self.needs_transfer():
+                if self.status == 'L':
+                    self.next_step.order_transaction()
+            else:
+                if self.status == 'TOS':
+                    self.update_transfer_status()
+                if self.status == 'TD':
+                    self.next_step.order_transaction()
+
+    def check_limits(self):
+        if self.has_next_step():
+            account = self.next_step.get_account()
+            market_price = account.get_average_market_price()
+            got_to_limit = self._check_limits(market_price)
+            return got_to_limit
+
+    def update_transfer_status(self):
+        transfer_done = self.next_step.check_for_enough_balance()
+        if transfer_done:
+            self.status = 'TD'
+            self.save()
+
+    def is_golden(self):
+        return self.get_profit_percent() > GOLDEN_TRADE_PROFIT_LIMIT_PERCENT
+
     @staticmethod
     def save_golden_trades():
         golden_trades = Order.objects.filter(owner=None, previous_step=None)
@@ -234,75 +266,50 @@ class Order(BaseModel):
             golden_trade.delete()
         market_info_of_all_currencies = Account.get_market_info_of_all()
         for market_info in market_info_of_all_currencies:
-            Order._save_golden_trades_of_currency(market_info['currency'], market_info['info'])
+            Order.save_golden_trades_of_currency(market_info['currency'], market_info['info'])
 
     @staticmethod
-    def _save_golden_trades_of_currency(currency, market_info):
+    def save_golden_trades_of_currency(currency, market_info):
         for sub1 in Account.__subclasses__():
             for sub2 in Account.__subclasses__():
                 if sub2 is not sub1:
                     sub1_lowest_price = market_info[sub1.__name__.lower()]['bestBuy']
                     sub2_highest_price = market_info[sub2.__name__.lower()]['bestSell']
-                    Order._save_trade_if_golden(first_account=sub1.get_type(), second_account=sub2.get_type(),
+                    Order.save_trades_if_golden(first_account=sub1.get_type(), second_account=sub2.get_type(),
                                                 first_lowest_price=sub1_lowest_price,
-                                                second_highest_price=sub2_highest_price, source=currency)
+                                                second_highest_price=sub2_highest_price,
+                                                source=currency, dest='USDT')
 
     @staticmethod
-    def _save_trade_if_golden(first_account, second_account, first_lowest_price, second_highest_price,
-                              source, dest='USDT'):
+    def save_trades_if_golden(first_account, second_account, first_lowest_price, second_highest_price,
+                              source, dest):
         if first_lowest_price < second_highest_price:
-            if second_highest_price / first_lowest_price - 1 > 0.002:
-                Order._create_golden_trade(source, dest, first_account, second_account, second_highest_price, False,
-                                           first_lowest_price)
-                Order._create_golden_trade(source, dest, second_account, first_account, first_lowest_price, True,
-                                           second_highest_price)
+            order = Order.create_trade(source, dest, first_account, second_account, second_highest_price, False,
+                                       first_lowest_price)
+            if order.is_golden():
+                order.save()
+            order = Order.create_trade(source, dest, second_account, first_account, first_lowest_price, True,
+                                       second_highest_price)
+            if order.is_golden():
+                order.save()
 
     @staticmethod
-    def _create_golden_trade(source, dest, first_account, second_account, profit_limit, is_sell, first_price):
-        second_step = Order.objects.create(account_type=second_account, is_sell=not is_sell,
-                                           source_currency_type=source, dest_currency_type=dest)
-        second_step.save()
-        first_step = Order.objects.create(next_step=second_step, source_currency_type=source, dest_currency_type=dest,
-                                          account_type=first_account,
-                                          profit_limit=profit_limit, is_sell=is_sell, price=first_price)
-        first_step.save()
+    def create_trade(source, dest, first_account, second_account, profit_limit, is_sell, first_price):
+        second_step = Order(account_type=second_account, is_sell=not is_sell,
+                            source_currency_type=source, dest_currency_type=dest)
+        first_step = Order(next_step=second_step, source_currency_type=source, dest_currency_type=dest,
+                           account_type=first_account,
+                           profit_limit=profit_limit, is_sell=is_sell, price=first_price)
+        return first_step
 
     @staticmethod
-    def update_status():
-        try:
-            Order.update_os_to_od()
-            Order.update_od_to_l_to_next_step_os()
-            Order.update_tos_to_td_to_next_step_os()
-        except NoAuthenticationInformation:
-            pass
-
-    @staticmethod
-    def update_os_to_od():
-        orders = Order.objects.filter(status='OS').exclude(owner=None)
+    def update_status_of_all_orders():
+        orders = Order.objects.exclude(owner=None)
         for order in orders:
-            order.update_status_based_on_account_data()
-
-    @staticmethod
-    def update_od_to_l_to_next_step_os():
-        orders = Order.objects.filter(status='OD').exclude(owner=None)
-        for order in orders:
-            if order.has_next_step():
-                account = order.next_step.get_account()
-                market_price = account.get_average_market_price()
-                got_to_limit = order.check_limits(market_price)
-                if got_to_limit and not order.needs_transfer():
-                    order.next_step.order_transaction()
-
-    @staticmethod
-    def update_tos_to_td_to_next_step_os():
-        orders = Order.objects.filter(status='TOS').exclude(owner=None)
-        for order in orders:
-            if order.has_next_step():
-                transfer_done = order.next_step.check_for_enough_balance()
-                if transfer_done:
-                    order.status = 'TD'
-                    order.save()
-                    order.next_step.order_transaction()
+            try:
+                order.update_status()
+            except NoAuthenticationInformation:
+                pass
 
     @staticmethod
     def get_status_based_on_account_order_status(account_order_status):

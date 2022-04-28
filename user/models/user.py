@@ -21,5 +21,3 @@ class User(AbstractUser, BaseModel):
         }
         # publish('send_sms', data)
 
-    def get_orders(self):
-        pass
