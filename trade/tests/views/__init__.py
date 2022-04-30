@@ -1,1 +1,1 @@
-from .compare_prices import *
+from .new_trade import *

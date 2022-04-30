@@ -28,7 +28,7 @@ def make_order_impossible(order):
     order.save()
 
 
-def make_user_authenticated(user, account_type='N'):
+def make_user_authenticated_in_account(user, account_type='N'):
     if account_type == 'N':
         user.nobitex_account.token = NOBITEX_TOKEN
         user.nobitex_account.save()
@@ -37,22 +37,18 @@ def make_user_authenticated(user, account_type='N'):
 def make_order_authenticated(order, account_type='N'):
     order.account_type = account_type
     order.save()
-    make_user_authenticated(order.owner, account_type)
+    make_user_authenticated_in_account(order.owner, account_type)
 
 
 def set_limits_for_two_step_order(order, is_sell, price=187.99,
-                                  lower_price=98.00,
-                                  higher_price=243.77):
+                                  min_price=98.00,
+                                  max_price=243.77):
     order.status = 'OD'
     order.is_sell = is_sell
     order.price = price
     order.next_step.is_sell = not is_sell
-    if order.is_sell:
-        order.loss_limit = higher_price
-        order.profit_limit = lower_price
-    else:
-        order.loss_limit = lower_price
-        order.profit_limit = higher_price
+    order.min_price = min_price
+    order.max_price = max_price
     order.save()
 
 

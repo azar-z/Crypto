@@ -18,9 +18,9 @@ class GoldenTradesTable(tables.Table):
     is_sell = tables.Column(verbose_name='First Action')
     next_step__is_sell = tables.Column(verbose_name='Second Action')
     price = tables.Column(verbose_name='With price (USDT)')
-    profit_limit = tables.Column(verbose_name='With price (USDT)')
+    profit_limit = tables.Column(verbose_name='With price (USDT)', accessor='get_profit_limit')
     next_step__account_type = tables.Column(verbose_name='In')
-    profit = tables.Column(accessor='get_profit_percent')
+    profit = tables.Column(accessor='get_profit_percent_for_golden_trade')
     accept = tables.Column(verbose_name='', accessor='get_form_initials')
 
     def render_accept(self, value, record):

@@ -9,7 +9,6 @@ from django.views import generic
 from trade.forms.order import OrderForm
 from trade.models import Order
 from user.errors import NoAuthenticationInformation
-from user.logics.accounts import get_account_class_based_on_type
 from user.models import Account
 
 
@@ -48,26 +47,14 @@ class NewTradeView(generic.CreateView):
 def get_orderbook_and_trades_view(request):
     source_currency = request.GET.get('source_currency_type', None)
     dest_currency = 'USDT'
-    first_step_account_type = request.GET.get('account_type', None)
-    first_step_account = get_account_class_based_on_type(first_step_account_type)
     if source_currency is not None and dest_currency is not None and source_currency != '' and dest_currency != '':
-        if first_step_account is None:
-            context = {
-                'is_valid': True,
-                'orderbook_bids': Account.get_orderbook_of_all(source_currency, dest_currency, True),
-                'orderbook_asks': Account.get_orderbook_of_all(source_currency, dest_currency, False),
-                'trades_sell': Account.get_trades_of_all(source_currency, dest_currency, True),
-                'trades_buy': Account.get_trades_of_all(source_currency, dest_currency, False),
-            }
-        else:
-            market_symbol = first_step_account.get_market_symbol(source_currency, dest_currency)
-            context = {
-                'is_valid': True,
-                'orderbook_bids': first_step_account.get_orderbook(market_symbol, True),
-                'orderbook_asks': first_step_account.get_orderbook(market_symbol, False),
-                'trades_sell': first_step_account.get_trades(market_symbol, True),
-                'trades_buy': first_step_account.get_trades(market_symbol, False),
-            }
+        context = {
+            'is_valid': True,
+            'orderbook_bids': Account.get_orderbook_of_all(source_currency, dest_currency, True),
+            'orderbook_asks': Account.get_orderbook_of_all(source_currency, dest_currency, False),
+            'trades_sell': Account.get_trades_of_all(source_currency, dest_currency, True),
+            'trades_buy': Account.get_trades_of_all(source_currency, dest_currency, False),
+        }
     else:
         context = {
             'is_valid': False,

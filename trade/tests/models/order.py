@@ -5,6 +5,7 @@ from trade.models.order import GOLDEN_TRADE_PROFIT_LIMIT_PERCENT
 from trade.tests.utils import *
 from user.errors import NoAuthenticationInformation
 
+
 class OrderModelTestCase(TestCase):
 
     def setUp(self):
@@ -124,53 +125,29 @@ class OrderModelTestCase(TestCase):
         self.assertFalse(result)
         self.assertEqual(one_step_order.status, 'OD')
 
-    def test_check_limits_sell_not_got_to_limit(self):
+    def test_check_limits_not_got_to_limit(self):
         two_step_order = self.two_step_order
         set_limits_for_two_step_order(two_step_order, is_sell=True)
-        market_price = (two_step_order.profit_limit + two_step_order.loss_limit) / 2
+        market_price = (two_step_order.max_price + two_step_order.min_price) / 2
         two_step_order._check_limits(market_price)
         self.assertNotEqual(two_step_order.status, 'L')
         self.assertEqual(two_step_order.status, 'OD')
 
-    def test_check_limits_sell_got_to_profit_limit(self):
+    def test_check_limits_got_to_max_price(self):
         two_step_order = self.two_step_order
         set_limits_for_two_step_order(two_step_order, is_sell=True)
-        market_price = two_step_order.profit_limit / 2
+        market_price = two_step_order.max_price * 2
         two_step_order._check_limits(market_price)
         self.assertEqual(two_step_order.status, 'L')
-        self.assertEqual(two_step_order.profit_limit, two_step_order.next_step.price)
+        self.assertEqual(two_step_order.max_price, two_step_order.next_step.price)
 
-    def test_check_limits_sell_got_to_loss_profit_limit(self):
+    def test_check_limits_got_to_min_price(self):
         two_step_order = self.two_step_order
         set_limits_for_two_step_order(two_step_order, is_sell=True)
-        market_price = two_step_order.loss_limit * 2
+        market_price = two_step_order.min_price / 2
         two_step_order._check_limits(market_price)
         self.assertEqual(two_step_order.status, 'L')
-        self.assertEqual(two_step_order.loss_limit, two_step_order.next_step.price)
-
-    def test_check_limits_buy_not_got_to_limit(self):
-        two_step_order = self.two_step_order
-        set_limits_for_two_step_order(two_step_order, is_sell=False)
-        market_price = (two_step_order.profit_limit + two_step_order.loss_limit) / 2
-        two_step_order._check_limits(market_price)
-        self.assertNotEqual(two_step_order.status, 'L')
-        self.assertEqual(two_step_order.status, 'OD')
-
-    def test_check_limits_buy_got_to_profit_limit(self):
-        two_step_order = self.two_step_order
-        set_limits_for_two_step_order(two_step_order, is_sell=False)
-        market_price = two_step_order.profit_limit * 2
-        two_step_order._check_limits(market_price)
-        self.assertEqual(two_step_order.status, 'L')
-        self.assertEqual(two_step_order.profit_limit, two_step_order.next_step.price)
-
-    def test_check_limits_buy_got_to_loss_profit_limit(self):
-        two_step_order = self.two_step_order
-        set_limits_for_two_step_order(two_step_order, is_sell=False)
-        market_price = two_step_order.loss_limit / 2
-        two_step_order._check_limits(market_price)
-        self.assertEqual(two_step_order.status, 'L')
-        self.assertEqual(two_step_order.loss_limit, two_step_order.next_step.price)
+        self.assertEqual(two_step_order.min_price, two_step_order.next_step.price)
 
     def test_get_total(self):
         order = self.one_step_order
@@ -219,19 +196,19 @@ class OrderModelTestCase(TestCase):
         self.assertEqual(order.source_currency_type, gained_currency_type)
         self.assertEqual(order.source_currency_amount, gained_currency_amount)
 
-    def test_get_profit_percent_sell(self):
+    def test_get_profit_percent_for_golden_trade_sell(self):
         two_step_order = self.two_step_order
         set_limits_for_two_step_order(two_step_order, True)
         price = two_step_order.price
-        profit_limit = two_step_order.profit_limit
-        self.assertEqual(two_step_order.get_profit_percent(), round(price / profit_limit * 100 - 100, 2))
+        profit_limit = two_step_order.get_profit_limit()
+        self.assertEqual(two_step_order.get_profit_percent_for_golden_trade(), round(price / profit_limit * 100 - 100, 2))
 
-    def test_get_profit_percent_buy(self):
+    def test_get_profit_percent_for_golden_trade_buy(self):
         two_step_order = self.two_step_order
         set_limits_for_two_step_order(two_step_order, False)
         price = two_step_order.price
-        profit_limit = two_step_order.profit_limit
-        self.assertEqual(two_step_order.get_profit_percent(), round(profit_limit / price * 100 - 100, 2))
+        profit_limit = two_step_order.get_profit_limit()
+        self.assertEqual(two_step_order.get_profit_percent_for_golden_trade(), round(profit_limit / price * 100 - 100, 2))
 
     def test_save_trades_if_golden_not_golden_low_percent(self):
         Order.objects.all().delete()

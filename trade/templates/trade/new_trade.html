@@ -36,8 +36,9 @@
             return false;
         };
 
+
         function_for_disabling_second_step_fields = function () {
-            if ($(this).is(':checked')) {
+            if ($('#id_no_second_step').is(':checked')) {
                 $('.second_step_field').each(function () {
                     $(this).attr('disabled', 'disabled');
                 });
@@ -48,10 +49,23 @@
             }
         };
 
+        change_checkbox_label = function () {
+            let no_second_step_checkbox_label = '';
+            let is_sell = $('input:radio[name=is_sell]:checked').val();
+            if (is_sell === 'True') no_second_step_checkbox_label = "Don't buy it afterwards";
+            else no_second_step_checkbox_label = "Don't sell it afterwards";
+            $('#extra_label').remove()
+            $("label[for='id_no_second_step']").append('<span id=extra_label><br>(' + no_second_step_checkbox_label + ')</span>')
+        }
+
         $(document).ready(function () {
-            $('#id_source_currency_type').change(function_for_rendering_tables);
-            $('#id_account_type').change(function_for_rendering_tables);
+            function_for_rendering_tables()
+            function_for_disabling_second_step_fields()
+            change_checkbox_label()
+
             $('#id_no_second_step').click(function_for_disabling_second_step_fields);
+            $('#id_source_currency_type').change(function_for_rendering_tables);
+            $("input[name='is_sell']").change(change_checkbox_label);
         })
 
     </script>

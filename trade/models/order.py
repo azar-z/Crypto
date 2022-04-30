@@ -21,21 +21,6 @@ ORDER_STATUS_CHOICES = (
 
 GOLDEN_TRADE_PROFIT_LIMIT_PERCENT = 2
 
-'''
-possible ways:
-1. FOU
-2. FOS -> FD  (has_second_step = False)
-3. FOS -> FD -> L -> MD -> SOU  (has_second_step = True & needs_moving() = False)
-4. FOS -> FD -> L -> MD -> SOS -> SOD  (has_second_step = True & needs_moving() = False)
-5. FOS -> FD -> L -> TOU  (has_second_step = True & needs_moving() = True)
-6. FOS -> FD -> L -> TOS -> MD -> SOU  (has_second_step = True & needs_moving() = True)
-7. FOS -> FD -> L -> TOS -> MD -> SOS -> SD  (has_second_step = True & needs_moving() = True)
-'''
-
-
-# source = BTC
-# dest = IRR
-
 
 class Order(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', null=True)
@@ -48,8 +33,8 @@ class Order(BaseModel):
     source_currency_type = models.CharField(verbose_name='Currency', max_length=4, choices=SOURCE_CURRENCIES)
     dest_currency_type = models.CharField(max_length=4, choices=DEST_CURRENCIES, default='USDT')
     source_currency_amount = models.DecimalField(verbose_name='Amount', max_digits=15, decimal_places=5, default=0)
-    profit_limit = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True)
-    loss_limit = models.DecimalField(max_digits=20, decimal_places=2, default=0, blank=True)
+    max_price = models.DecimalField(verbose_name='Maximum Price', max_digits=20, decimal_places=2, default=0, blank=True)
+    min_price = models.DecimalField(verbose_name='Minimum Price', max_digits=20, decimal_places=2, default=0, blank=True)
     deposit_wallet_address = models.CharField(max_length=200, null=True, default=None, blank=True)
     withdraw_id = models.CharField(max_length=200, null=True, default=None, blank=True)
     transfer_fee = models.DecimalField(max_digits=15, decimal_places=5, default=0.0)
@@ -89,6 +74,10 @@ class Order(BaseModel):
     def get_account(self):
         return get_account_based_on_type(self.owner, self.account_type)
 
+    def get_profit_limit(self):
+        profit_limit = self.min_price if self.is_sell else self.max_price
+        return profit_limit
+
     def order_transaction(self):
         self.time = timezone.now()
         account = self.get_account()
@@ -109,45 +98,35 @@ class Order(BaseModel):
         self.save()
 
     def _check_limits(self, market_price):
-        got_to_profit_limit = self._check_profit_limit(market_price)
-        if not got_to_profit_limit:
-            got_to_loss_limit = self._check_loss_limit(market_price)
-            return got_to_loss_limit
-        else:
-            return got_to_profit_limit
+        if not self.has_next_step():
+            return False
+        got_to_max_price = market_price >= self.max_price
+        got_to_min_price = market_price <= self.min_price
+        got_to_limit = got_to_max_price or got_to_min_price
+        if got_to_limit:
+            if got_to_min_price:
+                price = self.min_price
+            elif got_to_max_price:
+                price = self.max_price
+            self.do_got_to_limit_actions(price)
+        return got_to_limit
 
-    def _check_profit_limit(self, market_price):
-        return self._check_limit(is_sell_condition=market_price <= self.profit_limit,
-                                 limit_price=self.profit_limit)
-
-    def _check_loss_limit(self, market_price):
-        return self._check_limit(is_sell_condition=market_price >= self.loss_limit,
-                                 limit_price=self.loss_limit)
-
-    def _check_limit(self, is_sell_condition, limit_price):
+    def do_got_to_limit_actions(self, price):
         if self.has_next_step():
-            got_to_limit = False
-            if self.has_next_step():
-                if self.is_sell:
-                    if is_sell_condition:
-                        self.next_step.price = limit_price
-                        self.next_step.source_currency_amount = self.get_total() / limit_price
-                        got_to_limit = True
-                else:
-                    if not is_sell_condition:
-                        self.next_step.price = limit_price
-                        self.next_step.source_currency_amount = self.source_currency_amount
-                        got_to_limit = True
-            if got_to_limit:
-                self.status = 'L'
-                self.save()
-            return got_to_limit
+            if self.is_sell:
+                self.next_step.price = price
+                self.next_step.source_currency_amount = self.get_total() / price
+            else:
+                self.next_step.price = price
+                self.next_step.source_currency_amount = self.source_currency_amount
+            self.status = 'L'
+            self.save()
 
-    def got_to_profit_limit(self):
-        return self.next_step.price == self.profit_limit
+    def got_to_max_price(self):
+        return self.next_step.price == self.max_price
 
-    def got_to_loss_limit(self):
-        return self.next_step.price == self.loss_limit
+    def got_to_min_price(self):
+        return self.next_step.price == self.min_price
 
     def check_for_enough_balance(self):
         account = self.get_account()
@@ -208,23 +187,26 @@ class Order(BaseModel):
         address = self.deposit_wallet_address
         return account.request_withdraw(currency_type, currency_amount, address)
 
-    def get_profit_percent(self):
-        if self.profit_limit > self.price:
+    def get_profit_percent_for_golden_trade(self):
+        profit_limit = self.get_profit_limit()
+        if profit_limit > self.price:
             lower_price = self.price
-            higher_price = self.profit_limit
+            higher_price = profit_limit
         else:
-            lower_price = self.profit_limit
+            lower_price = profit_limit
             higher_price = self.price
         return round((higher_price / lower_price) * 100 - 100, 2)
 
     def get_form_initials(self):
         return {
             'source_currency_type': self.source_currency_type,
+            'source_currency_amount': round(float(self.source_currency_amount), 5),
             'is_sell': self.is_sell,
             'account_type': self.account_type,
             'price': round(float(self.price), 2),
             'no_second_step': False,
-            'profit_limit': round(float(self.profit_limit), 2),
+            'max_price': round(float(self.max_price), 2),
+            'min_price': round(float(self.min_price), 2),
             'second_step_account_type': self.next_step.account_type,
         }
 
@@ -257,7 +239,7 @@ class Order(BaseModel):
             self.save()
 
     def is_golden(self):
-        return self.get_profit_percent() > GOLDEN_TRADE_PROFIT_LIMIT_PERCENT
+        return self.get_profit_percent_for_golden_trade() > GOLDEN_TRADE_PROFIT_LIMIT_PERCENT
 
     @staticmethod
     def save_golden_trades():
@@ -296,10 +278,15 @@ class Order(BaseModel):
     @staticmethod
     def create_trade(source, dest, first_account, second_account, profit_limit, is_sell, first_price):
         second_step = Order(account_type=second_account, is_sell=not is_sell,
-                            source_currency_type=source, dest_currency_type=dest)
+                            source_currency_type=source, dest_currency_type=dest, price=profit_limit)
+        min_price = max_price = profit_limit
+        if is_sell:
+            max_price = first_price * 2
+        else:
+            min_price = first_price / 2
         first_step = Order(next_step=second_step, source_currency_type=source, dest_currency_type=dest,
                            account_type=first_account,
-                           profit_limit=profit_limit, is_sell=is_sell, price=first_price)
+                           min_price=min_price, max_price=max_price, is_sell=is_sell, price=first_price)
         return first_step
 
     @staticmethod
@@ -320,12 +307,3 @@ class Order(BaseModel):
         else:
             status = 'OS'
         return status
-
-
-'''
-needed fields for two step order:
-owner, first_step_is_sell, price, account_type, second_step_account_type,
-                            source_currency_type, dest_currency_type, source_currency_amount, profit_limit,
-                            loss_limit, deposit_wallet_address
-
-'''

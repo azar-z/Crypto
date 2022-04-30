@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from django.test import TestCase
 
-from trade.tests.utils import create_user, make_user_authenticated
+from trade.tests.utils import create_user, make_user_authenticated_in_account
 from user.models import Nobitex
 
 
@@ -57,7 +57,7 @@ class NobitexModelTest(TestCase):
     def test_has_authentication_information(self):
         account = self.account
         self.assertFalse(account.has_authentication_information())
-        make_user_authenticated(self.user)
+        make_user_authenticated_in_account(self.user)
         self.assertTrue(account.has_authentication_information())
 
 

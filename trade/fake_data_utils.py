@@ -55,7 +55,6 @@ def create_two_step_order(owner):
         source_currency_type=random.choice(SOURCE_CURRENCIES)[0],
         dest_currency_type=random.choice(DEST_CURRENCIES)[0],
         source_currency_amount=round(random.uniform(0.001, 1000.0), 3)
-
     )
     second_step.save()
     first_step_account_type = random.choice(ACCOUNT_TYPE_CHOICES)[0]
@@ -67,13 +66,8 @@ def create_two_step_order(owner):
         else:
             first_step_status = 'TD'
     price = random.randint(10, 1000)
-    if second_step.is_sell:
-        profit_limit = random.randint(10, price)
-        loss_limit = random.randint(price, 1000)
-    else:
-        profit_limit = random.randint(price, 1000)
-        loss_limit = random.randint(10, price)
-
+    max_price = random.randint(price, 1000)
+    min_price = random.randint(10, price)
     first_step = Order.objects.create(
         owner=owner,
         status=first_step_status,
@@ -85,9 +79,8 @@ def create_two_step_order(owner):
         source_currency_type=second_step.source_currency_type,
         dest_currency_type=second_step.dest_currency_type,
         source_currency_amount=round(random.uniform(0.001, 1000.0), 3),
-        profit_limit=profit_limit,
-        loss_limit=loss_limit
-        ,
+        max_price=max_price,
+        min_price=min_price,
         deposit_wallet_address=fake.pystr(50, 100),
         withdraw_id=fake.numerify("##################"),
         transfer_fee=round(random.uniform(0.01, 10.0), 3),
@@ -108,8 +101,8 @@ def create_two_step_order(owner):
     source_currency_type = ,
     dest_currency_type = ,
     source_currency_amount =, 
-    profit_limit = ,
-    loss_limit = ,
+    max_price = ,
+    min_price = ,
     deposit_wallet_address = ,
     withdraw_id = ,
     transfer_fee = ,

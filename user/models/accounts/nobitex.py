@@ -7,8 +7,8 @@ from django.db import models
 from trade.utils import ALL_CURRENCIES, AccountOrderStatus
 from user.models import Account
 
-API_DOMAIN = 'https://testnetapi.nobitex.ir'
-# API_DOMAIN = 'https://api.nobitex.ir'
+# API_DOMAIN = 'https://testnetapi.nobitex.ir'
+API_DOMAIN = 'https://api.nobitex.ir'
 
 
 class Nobitex(Account):
