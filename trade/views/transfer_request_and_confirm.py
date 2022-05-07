@@ -39,7 +39,7 @@ def transfer_request_view(request, pk):
         form = WalletAddressForm()
     context = {
         'form': form,
-        'currency': order.get_source_currency_type_display(),
+        'currency': order.get_gained_currency()[1],
         'account': order.next_step.get_account_type_display()
     }
     return render(request, 'trade/transfer_request.html', context=context)

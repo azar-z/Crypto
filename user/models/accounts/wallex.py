@@ -11,7 +11,7 @@ from user.models import Account
 
 
 class Wallex(Account):
-    token = models.CharField(max_length=100)
+    token = models.CharField(max_length=100, blank=True)
 
     def get_token(self, email, password):
         pass  # throw user

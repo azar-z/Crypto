@@ -5,7 +5,7 @@ from trade.models import Order
 
 
 class TransferAlertsTable(tables.Table):
-    currency = tables.Column(verbose_name='Currency', accessor='get_transferred_currency')
+    currency = tables.Column(verbose_name='Currency', accessor='get_gained_currency')
     account_type = tables.Column(verbose_name='From')
     next_step__account_type = tables.Column(verbose_name='To')
     confirm_or_cancel = tables.Column(verbose_name='', accessor='get_profit_or_loss')

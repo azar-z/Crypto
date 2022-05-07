@@ -12,9 +12,9 @@ from user.models import Account
 
 
 class Exir(Account):
-    api_key = models.CharField(max_length=200)
-    api_signature = models.CharField(max_length=200)
-    api_expires = models.CharField(max_length=200)
+    api_key = models.CharField(max_length=200, blank=True)
+    api_signature = models.CharField(max_length=200, blank=True)
+    api_expires = models.CharField(max_length=200, blank=True)
 
     @staticmethod
     def get_currency_symbol(currency):

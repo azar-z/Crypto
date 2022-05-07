@@ -21,7 +21,7 @@
         {% for currency_info in market_info %}
             <tr>
                 <th rowspan="2" class="table-dark">{{ currency_info.currency }}</th>
-                <td class="table-danger">Best Sell (Iran Rial)</td>
+                <td class="table-danger">Best Sell (USDT)</td>
                 <td class="table-danger">
                     <a href="{% url 'new_trade' %}?account_type=N&price={{ currency_info.info.nobitex.bestSell }}&source_currency_type={{ currency_info.currency }}">
                         {{ currency_info.info.nobitex.bestSell }}
@@ -37,7 +37,7 @@
                         {{ currency_info.info.exir.bestSell }}</a></td>
             </tr>
             <tr class="table-success">
-                <td>Best Buy (Iran Rial)</td>
+                <td>Best Buy (USDT)</td>
                 <td>
                     <a href="{% url 'new_trade' %}?account_type=N&price={{ currency_info.info.nobitex.bestBuy }}&source_currency_type={{ currency_info.currency }}">
 

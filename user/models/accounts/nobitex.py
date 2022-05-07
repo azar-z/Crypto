@@ -12,7 +12,7 @@ API_DOMAIN = 'https://api.nobitex.ir'
 
 
 class Nobitex(Account):
-    token = models.CharField(max_length=100)
+    token = models.CharField(max_length=100, blank=True)
 
     @staticmethod
     def needs_withdraw_confirmation():

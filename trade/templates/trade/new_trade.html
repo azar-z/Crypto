@@ -50,12 +50,14 @@
         };
 
         change_checkbox_label = function () {
-            let no_second_step_checkbox_label = '';
             let is_sell = $('input:radio[name=is_sell]:checked').val();
-            if (is_sell === 'True') no_second_step_checkbox_label = "Don't buy it afterwards";
-            else no_second_step_checkbox_label = "Don't sell it afterwards";
+            if (is_sell === 'True') add_label_to_checkbox("Don't buy it afterwards");
+            if (is_sell === 'False') add_label_to_checkbox("Don't sell it afterwards");
+        }
+
+        add_label_to_checkbox = function (str_to_add) {
             $('#extra_label').remove()
-            $("label[for='id_no_second_step']").append('<span id=extra_label><br>(' + no_second_step_checkbox_label + ')</span>')
+            $("label[for='id_no_second_step']").append('<span id=extra_label><br>(' + str_to_add + ')</span>')
         }
 
         $(document).ready(function () {
