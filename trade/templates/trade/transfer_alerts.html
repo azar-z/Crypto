@@ -1,9 +1,4 @@
 {% extends 'user/base_template.html' %}
-{% load django_tables2 %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
-{% load crispy_forms_tags%}
 
 {% block title %} Transfer Alerts {% endblock %}
 
@@ -11,11 +6,7 @@
 {% endblock %}
 
 {% block content %}
-
     <h3>Confirm These Transfers:</h3>
-{% if orders %}
-    {% render_table table %}
-{% else %}
-    <div class="alert alert-info">No orders.</div>
-{% endif %}
+{% include 'trade/includes/order_table.html' %}
+
 {% endblock %}

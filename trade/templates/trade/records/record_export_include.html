@@ -1,0 +1,40 @@
+<div id="content"><span id="loading"></span></div>
+
+<a class="btn btn-sm btn-dark"
+   href="{{ request.path }}?export_format=xlsx{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">
+    Export Data (.xlsx)
+</a>
+
+
+<script>
+    download_file = function () {
+        let content = $('#content');
+        content.html("Please wait.");
+        content.addClass("alert alert-info")
+        $.ajaxSetup({cache: false, timeout: 360000});
+        const url = "{% url 'poll_for_download' %}";
+        let i = 0;
+        (function worker() {
+            $.getJSON(url + "?task_id={{ task_id }}", function (data) {
+                if (data.filename) {
+                    const file_url = url + "?filename=" + data.filename;
+                    $("#content").html("If your download didn't start automatically, please click <a href='" + file_url + "'>here</a>.");
+                    window.location.href = file_url;
+                } else {
+                    setTimeout(worker, 5000);
+                }
+            });
+        })();
+        setInterval(function () {
+            i = ++i % 4;
+            $("#loading").html("loading" + Array(i + 1).join("."));
+        }, 1000);
+    };
+
+    $(document).ready(function () {
+        if ("{{ task_id }}") {
+            download_file()
+        }
+    })
+</script>
+

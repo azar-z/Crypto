@@ -1,0 +1,47 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% block title %} Order Record (html) {% endblock %}
+
+{% block style %}
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'trade/styles/raw_pagination.css' %}">
+{% endblock %}
+
+
+
+{% block content %}
+    {% include 'trade/records/record_export_include.html' %}
+
+    {% include 'trade/includes/not_inline_filter.html' %}
+    {% include 'trade/includes/order_table_rendered.html' %}
+
+
+
+    <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="first">&laquo; first</a>
+            <a href="?page=
+                    {{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="previous">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page=
+                    {{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="next">next</a>
+            <a href="?page=
+                    {{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="last">last &raquo;</a>
+        {% endif %}
+    </span>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+<td>
+    {% if order.is_sell %}
+        <span class="table-danger">Sell</span>
+    {% else %}
+        <span class="table-success">Buy</span>
+    {% endif %}
+</td>
+<td>{{ order.get_account_type_display }}</td>
+<td>{{ order.source_currency_amount }}</td>
+<td>{{ order.price }}</td>
+<td>{{ order.get_status_display }}</td>

@@ -1,0 +1,32 @@
+
+.pagination a{
+    color: white;
+}
+
+.pagination a:hover{
+    color: darkkhaki;
+}
+
+.pagination {
+    background: #555555;
+    margin: 20px;
+    padding: 5px;
+
+}
+
+
+.next , .previous, .first, .last{
+    margin: 100px;
+}
+
+.current{
+    color: #bbbbbb;
+}
+
+.pagination .active a{
+    color: darkkhaki;
+}
+
+.pagination li {
+    margin: 0 10px;
+}

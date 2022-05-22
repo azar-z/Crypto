@@ -33,8 +33,8 @@ class Order(BaseModel):
     source_currency_type = models.CharField(verbose_name='Currency', max_length=4, choices=SOURCE_CURRENCIES)
     dest_currency_type = models.CharField(max_length=4, choices=DEST_CURRENCIES, default='USDT')
     source_currency_amount = models.DecimalField(verbose_name='Amount', max_digits=15, decimal_places=5, default=0)
-    max_price = models.DecimalField(verbose_name='Maximum Price', max_digits=20, decimal_places=2, default=0, blank=True)
-    min_price = models.DecimalField(verbose_name='Minimum Price', max_digits=20, decimal_places=2, default=0, blank=True)
+    max_price = models.DecimalField(verbose_name='Maximum Price  (USDT)', max_digits=20, decimal_places=2, default=0, blank=True)
+    min_price = models.DecimalField(verbose_name='Minimum Price  (USDT)', max_digits=20, decimal_places=2, default=0, blank=True)
     deposit_wallet_address = models.CharField(max_length=200, null=True, default=None, blank=True)
     withdraw_id = models.CharField(max_length=200, null=True, default=None, blank=True)
     transfer_fee = models.DecimalField(max_digits=15, decimal_places=5, default=0.0)
@@ -64,6 +64,9 @@ class Order(BaseModel):
 
     def get_absolute_url(self):
         return reverse('order_detail', kwargs={'pk': self.pk})
+
+    def get_date(self):
+        return self.time.date()
 
     def has_next_step(self):
         return self.next_step is not None

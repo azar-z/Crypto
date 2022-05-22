@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
 
 from trade.models import Order
 from user.models.account import ACCOUNT_TYPE_CHOICES
@@ -48,7 +47,7 @@ class OrderForm(forms.ModelForm):
             return max_price
         price = self.cleaned_data['price']
         if max_price <= price:
-            raise ValidationError('Maximum price should be greater than price')
+            self.add_error('max_price', "Maximum price should be greater than price")
         return max_price
 
     def clean_min_price(self):
@@ -57,17 +56,16 @@ class OrderForm(forms.ModelForm):
             return min_price
         price = self.cleaned_data['price']
         if min_price >= price:
-            raise ValidationError('Minimum price should be less than price')
+            self.add_error('min_price', "Minimum price should be less than price")
         return min_price
 
     def clean_source_currency_amount(self):
         source_currency_amount = self.cleaned_data['source_currency_amount']
         if not source_currency_amount:
-            raise ValidationError('Amount is too small')
+            self.add_error('source_currency_amount', 'Amount is too small')
         return source_currency_amount
 
     class Meta:
         model = Order
         fields = ['source_currency_type', 'is_sell', 'account_type', 'source_currency_amount', 'price',
-                  'no_second_step', 'second_step_account_type',
-                  'max_price', 'min_price']
+                  'no_second_step', 'second_step_account_type', 'max_price', 'min_price']

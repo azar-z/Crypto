@@ -1,0 +1,47 @@
+<table class="table table-hover">
+    <thead class="thead-dark">
+    <tr>
+        <th>Username</th>
+        <th>Email Address</th>
+        <th>Ordered In</th>
+        <th>Currency</th>
+
+        <th></th>
+        <th>Action</th>
+        <th>In</th>
+        <th>Amount</th>
+        <th>Price (USDT)</th>
+        <th>Status</th>
+        <th>Min Price (USDT)</th>
+        <th>Max Price (USDT)</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for order in orders %}
+        {% with owner=order.owner %}
+            <tr>
+                <td rowspan="2">{{ owner.username }}</td>
+                <td rowspan="2">{{ owner.email }}</td>
+                <td rowspan="2">{{ order.time|date }}</td>
+                <td rowspan="2">{{ order.source_currency_type }}</td>
+
+                <td>First Action</td>
+                {% include 'trade/includes/order_step_row.html' with order=order %}
+                <td>{{ order.min_price }}</td>
+                <td>{{ order.max_price }}</td>
+            </tr>
+            {% if order.next_step != None %}
+            <tr>
+                <td>Second Action</td>
+                {% include 'trade/includes/order_step_row.html' with order=order.next_step %}
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            {% else %}
+                <td colspan="8">No second action.</td>
+            {% endif %}
+        {% endwith %}
+    {% endfor %}
+    </tbody>
+</table>

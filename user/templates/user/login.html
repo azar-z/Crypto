@@ -9,7 +9,8 @@
 {% endblock %}
 
 {% block content %}
-    <div align="center">
+    {% if user.is_anonymous %}
+        <div align="center">
         <form method="post" action="{% url 'login' %}" align="left">
             {% csrf_token %}
             <legend>Login Information:</legend>
@@ -20,4 +21,7 @@
             forgot your password?
         </a>
     </div>
+    {% else %}
+        <h2>Please <a href="{% url 'logout' %}">Logout</a> first!</h2>
+    {% endif %}
 {% endblock %}

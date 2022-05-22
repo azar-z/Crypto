@@ -1,0 +1,29 @@
+{% load crispy_forms_tags %}
+
+{{ filter.form.media }}
+<form action="" method="get" style="margin-bottom: 10px">
+    {{ filter.form|crispy }}
+    <input type="submit" value="search" class="btn btn-info" style="margin: 20px 0 0 10px"/>
+</form>
+
+<script>
+    username_auto_complete = function () {
+        $("#id_owner__username").autocomplete({
+            source: "{% url 'get_usernames' %}",
+            minLength: 1,
+        });
+    };
+
+    email_auto_complete = function () {
+        $("#id_owner__email").autocomplete({
+            source: "{% url 'get_emails' %}",
+            minLength: 1,
+        });
+    };
+
+    $(document).ready(function () {
+        username_auto_complete();
+        email_auto_complete();
+    })
+
+</script>

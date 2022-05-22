@@ -16,6 +16,7 @@ THIRD_PARTY_APPS = [
     'django_tables2',
     'bootstrap4',
     'bootstrap_datepicker_plus',
+    'django_celery_results',
 ]
 
 # created applications
