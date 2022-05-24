@@ -124,3 +124,5 @@ MESSAGE_TAGS = {
  }
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

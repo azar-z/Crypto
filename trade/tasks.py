@@ -28,7 +28,6 @@ def export_data(export_format, order_ids):
     header_font = xlwt.Font()
     header_font.name = 'Arial'
     header_font.bold = True
-
     header_style = xlwt.XFStyle()
     header_style.font = header_font
 
@@ -41,7 +40,7 @@ def export_data(export_format, order_ids):
     for col_num in range(len(columns)):
         sheet.write(row_num, col_num, columns[col_num], header_style)
 
-    orders = Order.objects.filter(id__in=order_ids)
+    orders = Order.objects.filter(id__in=order_ids).order_by('-time')
 
     rows = orders.values_list(
         'owner__username', 'owner__email',
@@ -50,7 +49,9 @@ def export_data(export_format, order_ids):
         'max_price', 'min_price',
         'next_step__is_sell', 'next_step__account_type', 'next_step__source_currency_amount', 'next_step__price', 'next_step__status',
     )
+
     rows = [[x.strftime("%Y-%m-%d %H:%M") if isinstance(x, datetime.datetime) else x for x in row] for row in rows]
+
     for row in rows:
         row_num += 1
         for col_num in range(len(row)):
@@ -59,4 +60,3 @@ def export_data(export_format, order_ids):
     workbook.save(filename)
 
     return filename
-

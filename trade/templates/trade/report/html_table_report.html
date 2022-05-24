@@ -1,0 +1,20 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% block title %} Order Report (html) {% endblock %}
+
+{% block style %}
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'trade/styles/raw_pagination.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'trade/styles/report_filter.css' %}">
+{% endblock %}
+
+
+{% block content %}
+    {% include 'trade/report/includes/report_export_include.html' %}
+
+    {% include 'trade/report/includes/report_filter.html' %}
+    {% include 'trade/report/includes/order_table_rendered.html' %}
+
+{% endblock %}

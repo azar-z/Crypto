@@ -1,10 +1,8 @@
 {% load crispy_forms_tags %}
 
 {{ filter.form.media }}
-<form action="" method="get" style="margin-bottom: 10px">
-    {{ filter.form|crispy }}
-    <input type="submit" value="search" class="btn btn-info" style="margin: 20px 0 0 10px"/>
-</form>
+{% crispy filter.form %}
+
 
 <script>
     username_auto_complete = function () {
@@ -25,5 +23,4 @@
         username_auto_complete();
         email_auto_complete();
     })
-
 </script>

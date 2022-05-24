@@ -1,0 +1,14 @@
+.submit_button{
+    margin: 10px 0;
+    width: 100%;
+}
+
+.dark_btn{
+    width: 48%;
+    font-size: 18px;
+    margin: 0 0.5% 20px 0.5%;
+}
+
+table{
+    margin-top: 30px;
+}

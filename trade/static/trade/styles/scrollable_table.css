@@ -1,0 +1,10 @@
+table tbody, table thead
+{
+    display: block;
+}
+
+table tbody
+{
+   overflow: auto;
+   height: 400px;
+}

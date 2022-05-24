@@ -1,10 +1,13 @@
 <div id="content"><span id="loading"></span></div>
 
-<a class="btn btn-sm btn-dark"
+<a class="btn btn-sm btn-dark dark_btn"
    href="{{ request.path }}?export_format=xlsx{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">
     Export Data (.xlsx)
 </a>
 
+<a class="btn btn-sm btn-dark dark_btn" href="{{ request.path }}">
+Remove filters
+</a>
 
 <script>
     download_file = function () {

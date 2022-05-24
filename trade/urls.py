@@ -34,8 +34,8 @@ urlpatterns = [
     path('home/', views.GoldenTrades.as_view(), name='home'),
 
     # record
-    path('record/django_table/', views.DjangoTableOrderRecordView.as_view(), name='django_table_record'),
-    path('record/html/', views.HTMLOrderRecordView.as_view(), name='html_record'),
+    path('record/django_table/', views.DjangoTableOrderReportView.as_view(), name='django_table_record'),
+    path('record/html/', views.HTMLOrderReportView.as_view(), name='html_record'),
     path('poll_for_download/', views.poll_for_download, name='poll_for_download'),
     path('get_usernames/', views.get_usernames, name='get_usernames'),
     path('get_emails/', views.get_emails, name='get_emails'),
