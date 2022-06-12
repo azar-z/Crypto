@@ -33,6 +33,7 @@ def create_one_step_order(owner):
         dest_currency_type=random.choice(DEST_CURRENCIES)[0],
         source_currency_amount=round(random.uniform(0.001, 1000.0), 3),
     )
+    order.add_tag(fake.pystr(10, 20))
     order.save()
     return order
 
@@ -56,6 +57,7 @@ def create_two_step_order(owner):
         dest_currency_type=random.choice(DEST_CURRENCIES)[0],
         source_currency_amount=round(random.uniform(0.001, 1000.0), 3)
     )
+    second_step.add_tag(fake.pystr(10, 20))
     second_step.save()
     first_step_account_type = random.choice(ACCOUNT_TYPE_CHOICES)[0]
     if second_step.status == 'NO':
@@ -86,26 +88,6 @@ def create_two_step_order(owner):
         transfer_fee=round(random.uniform(0.01, 10.0), 3),
         next_step=second_step
     )
+    first_step.add_tag(fake.pystr(10, 20))
     first_step.save()
     return first_step
-
-
-'''
-    owner = ,
-    status =,
-    time = ,
-    is_sell =, 
-    price = ,
-    account_type = ,
-    id_in_account = ,
-    source_currency_type = ,
-    dest_currency_type = ,
-    source_currency_amount =, 
-    max_price = ,
-    min_price = ,
-    deposit_wallet_address = ,
-    withdraw_id = ,
-    transfer_fee = ,
-    next_step = 
-
-'''

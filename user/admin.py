@@ -1,9 +1,10 @@
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.urls import reverse
 from django.utils.html import format_html
 
 from trade.models import Order
-from user.models import User, Nobitex, Wallex, Exir
+from user.models import User, Nobitex, Wallex, Exir, Tag
 
 
 class NobitexInline(admin.TabularInline):
@@ -24,8 +25,12 @@ class OrderInline(admin.TabularInline):
     show_change_link = True
 
 
+class TagInline(GenericTabularInline):
+    model = Tag
+
+
 class UserAdmin(admin.ModelAdmin):
-    inlines = [NobitexInline, WallexInline, ExirInline, OrderInline]
+    inlines = [NobitexInline, WallexInline, ExirInline, OrderInline, TagInline]
 
     fieldsets = (
         (None, {
@@ -55,5 +60,10 @@ class OrderAdmin(admin.ModelAdmin):
     previous_step_link.allow_tags = True
 
 
+class TagAdmin(admin.ModelAdmin):
+    search_fields = ['content_type']
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Order, OrderAdmin)
+admin.site.register(Tag, TagAdmin)

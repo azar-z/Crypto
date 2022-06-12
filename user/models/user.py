@@ -21,3 +21,4 @@ class User(AbstractUser, BaseModel):
         }
         # publish('send_sms', data)
 
+
