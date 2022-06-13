@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 
-from user.models import Tag
+from tagging.models import Tag
 
 
 class BaseModel(models.Model):
@@ -14,3 +14,6 @@ class BaseModel(models.Model):
 
     def add_tag(self, tag_text):
         self.tags.create(text=tag_text)
+
+    def to_dict(self):
+        return self.__dict__

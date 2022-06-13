@@ -7,11 +7,6 @@ from user.models import User
 
 
 def get_usernames(request):
-    print('==================================================================')
-    print('==================================================================')
-    print('in get_usernames view')
-    print('==================================================================')
-    print('==================================================================')
     if is_ajax(request):
         term = request.GET.get('term')
         users = User.objects.filter(username__icontains=term)[:10]

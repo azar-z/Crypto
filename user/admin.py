@@ -3,8 +3,9 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 from django.urls import reverse
 from django.utils.html import format_html
 
+from tagging.models import Tag
 from trade.models import Order
-from user.models import User, Nobitex, Wallex, Exir, Tag
+from user.models import User, Nobitex, Wallex, Exir
 
 
 class NobitexInline(admin.TabularInline):
@@ -40,6 +41,8 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(admin.ModelAdmin):
+    inlines = [TagInline]
+
     list_display = ['name', 'next_step_link', 'previous_step_link']
 
     def name(self, obj):

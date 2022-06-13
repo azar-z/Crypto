@@ -53,7 +53,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="recordsDropdown" role="button"
                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                            data-bs-toggle="dropdown">
+                               data-bs-toggle="dropdown">
                                 Records
                             </a>
                             <div class="dropdown-menu"
@@ -61,6 +61,10 @@
                                 <a class="dropdown-item" href="{% url 'django_table_record' %}">Django Table Record</a>
                                 <a class="dropdown-item" href="{% url 'html_record' %}">HTML Record</a>
                             </div>
+                        </li>
+
+                        <li class="nav-item {% if url_name == 'tags' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'tags' %}">Tags</a>
                         </li>
                     {% endif %}
 

@@ -23,4 +23,5 @@ THIRD_PARTY_APPS = [
 CREATED_APPS = [
     'user',
     'trade',
+    'tagging',
 ]

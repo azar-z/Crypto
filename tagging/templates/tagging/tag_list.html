@@ -1,0 +1,65 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+
+{% block title %} Tags {% endblock %}
+
+{% block style %}
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'trade/styles/raw_pagination.css' %}">
+
+
+{% endblock %}
+
+{% block content %}
+    {% include 'tagging/includes/filter.html' %}
+    <ul style="list-style-type: none;">
+        {% for tag in tags %}
+            <li>
+            <table class="table table-bordered">
+                <th style="color: brown" colspan="2">{{ tag }}</th>
+
+                    <tr>
+                        <th>content_type</th>
+                    <td>{{ tag.content_type }}</td>
+                    </tr>
+                    {% for key, value in tag.content_object.to_dict.items %}
+                        <tr>
+                            <th>{{ key }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <br>
+            </li>
+        {% endfor %}
+    </ul>
+
+
+    <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1
+                    {% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="first">&laquo; first</a>
+            <a href="?page=
+                    {{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="previous">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page=
+                    {{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="next">next</a>
+            <a href="?page=
+                    {{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="last">last &raquo;</a>
+        {% endif %}
+    </span>
+    </div>
+
+{% endblock %}

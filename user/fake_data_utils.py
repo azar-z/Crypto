@@ -17,6 +17,7 @@ def create_fake_user():
     )
     user.set_password('1234')
     user.add_tag(fake.pystr(10, 20))
+    user.add_tag(fake.pystr(10, 20))
     user.save()
     return user
 
