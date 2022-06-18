@@ -1,9 +1,10 @@
 body {
     margin-bottom: 20px;
+    font-family: "Times New Roman", Times, serif;
 }
 
 
-nav{
-  background: #3f434a;
-  font-size: 20px;
+nav {
+    background: #3f434a;
+    font-size: 20px;
 }

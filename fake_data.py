@@ -1,5 +1,4 @@
 import os
-import random
 
 import django
 
@@ -10,8 +9,8 @@ from user.models import User
 from trade.fake_data_utils import create_one_step_order, create_two_step_order
 from user.fake_data_utils import create_fake_user
 
-NUM_OF_USERS = 10
-
+NUM_OF_USERS = 300
+NUM_OF_ORDERS = 30
 
 def create_users():
     for _ in range(NUM_OF_USERS):
@@ -20,17 +19,12 @@ def create_users():
 
 def create_orders():
     i = 0
-    for _ in range(NUM_OF_USERS):
-        i += 1
-        while User.objects.get(id=i).is_staff:
-            i += 1
-        user = User.objects.get(id=i)
-        j = random.randint(10, 30)
-        for _ in range(j):
-            create_one_step_order(owner=user)
-        j = random.randint(10, 30)
-        for _ in range(j):
-            create_two_step_order(owner=user)
+    for user in User.objects.all():
+        if not user.is_staff:
+            for _ in range(NUM_OF_ORDERS):
+                create_one_step_order(owner=user)
+            for _ in range(NUM_OF_ORDERS):
+                create_two_step_order(owner=user)
 
 
 if __name__ == "__main__":

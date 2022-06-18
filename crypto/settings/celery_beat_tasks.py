@@ -1,11 +1,13 @@
-ORDERBOOK_UPDATE_RATE = 5.0
-TRADES_UPDATE_RATE = 10.0
-MARKET_UPDATE_RATE = 30.0
+ORDERBOOK_UPDATE_RATE = 10.0
+TRADES_UPDATE_RATE = 30.0
+MARKET_UPDATE_RATE = 120.0
 
 
 ORDER_UPDATE_STATUS_RATE = 60.0
 
 UPDATE_GOLDEN_TRADES_RATE = 100.0
+
+EXPORT_DATA_RATE = 100.0
 
 CELERY_BEAT_SCHEDULE = {
     ################################## market update tasks ###############################
@@ -77,7 +79,6 @@ CELERY_BEAT_SCHEDULE = {
         },
     },
 
-
     ################################## golden trade task ###############################
 
     'update_golden_trades': {
@@ -87,4 +88,31 @@ CELERY_BEAT_SCHEDULE = {
             'expires': UPDATE_GOLDEN_TRADES_RATE / 2,
         },
     },
+
+    ################################## export data ###############################
+
+    'export_user_data_task': {
+        'task': 'data.tasks.export_user_data_task',
+        'schedule': EXPORT_DATA_RATE,
+        'options': {
+            'expires': EXPORT_DATA_RATE / 2,
+        },
+    },
+
+    'export_price_data_task': {
+        'task': 'data.tasks.export_price_data_task',
+        'schedule': EXPORT_DATA_RATE,
+        'options': {
+            'expires': EXPORT_DATA_RATE / 2,
+        },
+    },
+
+    'save_prices_task': {
+        'task': 'data.tasks.save_prices_task',
+        'schedule': MARKET_UPDATE_RATE,
+        'options': {
+            'expires': MARKET_UPDATE_RATE / 2,
+        },
+    },
+
 }

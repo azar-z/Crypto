@@ -24,4 +24,5 @@ CREATED_APPS = [
     'user',
     'trade',
     'tagging',
+    'data',
 ]
