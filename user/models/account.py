@@ -17,9 +17,6 @@ ACCOUNT_TYPE_CHOICES = (
 
 NUMBER_OF_ROWS = 6
 
-# source = BTC
-# dest = IRR
-
 
 class Account(BaseModel):
     owner = models.OneToOneField(User, on_delete=models.CASCADE, validators=[validators.validate_not_staff],

@@ -231,7 +231,7 @@ class Order(BaseModel):
     def check_limits(self):
         if self.has_next_step():
             account = self.next_step.get_account()
-            market_price = account.get_average_market_price()
+            market_price = account.get_average_market_price(self.source_currency_type, self.dest_currency_type)
             got_to_limit = self._check_limits(market_price)
             return got_to_limit
 

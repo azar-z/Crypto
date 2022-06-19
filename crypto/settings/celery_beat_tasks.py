@@ -10,6 +10,7 @@ UPDATE_GOLDEN_TRADES_RATE = 100.0
 EXPORT_DATA_RATE = 100.0
 
 CELERY_BEAT_SCHEDULE = {
+
     ################################## market update tasks ###############################
 
     'cache-orderbook-nobitex': {
@@ -99,20 +100,11 @@ CELERY_BEAT_SCHEDULE = {
         },
     },
 
-    'export_price_data_task': {
-        'task': 'data.tasks.export_price_data_task',
+    'download_data_from_binance': {
+        'task': 'data.tasks.download_data_from_binance',
         'schedule': EXPORT_DATA_RATE,
         'options': {
             'expires': EXPORT_DATA_RATE / 2,
         },
     },
-
-    'save_prices_task': {
-        'task': 'data.tasks.save_prices_task',
-        'schedule': MARKET_UPDATE_RATE,
-        'options': {
-            'expires': MARKET_UPDATE_RATE / 2,
-        },
-    },
-
 }

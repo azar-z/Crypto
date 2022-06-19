@@ -24,4 +24,5 @@ urlpatterns = [
     path('user/', include('user.urls')),
     path('trade/', include('trade.urls')),
     path('tagging/', include('tagging.urls')),
+    path('data/', include('data.urls')),
 ]

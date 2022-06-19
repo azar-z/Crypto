@@ -3,7 +3,6 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 from django.urls import reverse
 from django.utils.html import format_html
 
-from data.models import CryptoPrice
 from tagging.models import Tag
 from trade.models import Order
 from user.models import User, Nobitex, Wallex, Exir
@@ -71,4 +70,3 @@ class TagAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(CryptoPrice)
