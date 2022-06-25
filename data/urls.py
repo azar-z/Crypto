@@ -19,7 +19,6 @@ from django.urls import path
 from data import views
 
 urlpatterns = [
-    # path('bi_dashboard/', views.bi_dashboard_view, name='bi_dashboard'),
-    path('download/', views.download, name='download'),
-
+    path('bi_dashboard/', views.bi_dashboard_view, name='bi_dashboard'),
+    path('prediction/', views.get_name, name='prediction'),
 ]

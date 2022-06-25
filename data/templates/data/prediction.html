@@ -1,0 +1,23 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} Prediction {% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <div align="center">
+        <form method="post" align="left">
+            {% csrf_token %}
+            <legend>User data:</legend>
+            {{ form|crispy }}
+            <input type="submit" value="Predict Profit Percent" class="btn btn-info">
+        </form>
+    </div>
+    {% if prediction %}
+        <br>
+        <div class="alert alert-info"><strong>The user will have {{ prediction }}% profit.</strong></div>
+    {% endif %}
+{% endblock %}

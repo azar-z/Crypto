@@ -1,15 +1,40 @@
-ORDERBOOK_UPDATE_RATE = 10.0
-TRADES_UPDATE_RATE = 30.0
+ORDERBOOK_UPDATE_RATE = 100.0
+TRADES_UPDATE_RATE = 300.0
 MARKET_UPDATE_RATE = 120.0
 
-
-ORDER_UPDATE_STATUS_RATE = 60.0
+ORDER_UPDATE_STATUS_RATE = 600.0
 
 UPDATE_GOLDEN_TRADES_RATE = 100.0
 
 EXPORT_DATA_RATE = 100.0
 
 CELERY_BEAT_SCHEDULE = {
+
+    ################################## export data ###############################
+
+    'export_user_data_task': {
+        'task': 'data.tasks.export_user_data_task',
+        'schedule': EXPORT_DATA_RATE,
+        'options': {
+            'expires': EXPORT_DATA_RATE / 2,
+        },
+    },
+
+    'download_data_from_binance': {
+        'task': 'data.tasks.download_data_from_binance',
+        'schedule': EXPORT_DATA_RATE,
+        'options': {
+            'expires': EXPORT_DATA_RATE / 2,
+        },
+    },
+
+    'cluster_users_based_on_transaction_volume': {
+        'task': 'data.tasks.cluster_users_based_on_transaction_volume',
+        'schedule': EXPORT_DATA_RATE,
+        'options': {
+            'expires': EXPORT_DATA_RATE / 2,
+        },
+    },
 
     ################################## market update tasks ###############################
 
@@ -90,21 +115,4 @@ CELERY_BEAT_SCHEDULE = {
         },
     },
 
-    ################################## export data ###############################
-
-    'export_user_data_task': {
-        'task': 'data.tasks.export_user_data_task',
-        'schedule': EXPORT_DATA_RATE,
-        'options': {
-            'expires': EXPORT_DATA_RATE / 2,
-        },
-    },
-
-    'download_data_from_binance': {
-        'task': 'data.tasks.download_data_from_binance',
-        'schedule': EXPORT_DATA_RATE,
-        'options': {
-            'expires': EXPORT_DATA_RATE / 2,
-        },
-    },
 }

@@ -51,7 +51,8 @@ class User(AbstractUser, BaseModel):
     def export_data(cls):
         with open('exported_data/user_data.csv', 'w', encoding='UTF8') as f:
             writer = csv.writer(f)
-            header = ['id', 'username', 'phone_number', 'national_code', 'address', 'city', 'birthday', 'is_woman',
+            header = ['id', 'username', 'phone_number', 'national_code', 'address', 'city',
+                      'birthday', 'age', 'is_woman',
                       'total_transaction', 'total_profit_or_loss', 'total_profit_or_loss_percent']
             writer.writerow(header)
             for user in User.objects.all():
@@ -61,10 +62,14 @@ class User(AbstractUser, BaseModel):
                     total_profit_or_loss_percent = 0
                     if total_transaction != 0:
                         total_profit_or_loss_percent = total_profit_or_loss / total_transaction * 100
-                    data = [user.id, user.username, user.phone_number, user.national_code, user.address, user.city,
-                            user.birthday, user.is_woman,
+                    data = [user.id, user.username, user.phone_number, user.national_code, user.address,
+                            user.get_city_display(),
+                            user.birthday, user.get_age(), user.is_woman,
                             total_transaction, total_profit_or_loss, total_profit_or_loss_percent]
                     writer.writerow(data)
+
+    def get_age(self):
+        return timezone.now().year - self.birthday.year
 
     def send_sms_to_user(self, text):
         data = {

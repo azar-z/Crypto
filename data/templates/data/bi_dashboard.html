@@ -1,0 +1,67 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+
+{% block title %} BI Dashboard {% endblock %}
+
+{% block style %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="card-group">
+        <div class="card text-center">
+            <div id="sexuality_chart"></div>
+            <div class="card-body">
+                <h5 class="card-title">Users Sexuality</h5>
+            </div>
+        </div>
+
+
+        <div class="card text-center">
+            <div id="city_chart"></div>
+            <div class="card-body">
+                <h5 class="card-title">Users City</h5>
+            </div>
+        </div>
+
+
+        <div class="card text-center">
+            <div id="coins_popularity_chart"></div>
+            <div class="card-body">
+                <h5 class="card-title">Coins Popularity</h5>
+            </div>
+        </div>
+    </div>
+
+        <div class="card-group">
+        <div class="card text-center">
+            <img src="{% static 'data/user_clustering.png' %}">
+            <div class="card-body">
+                <h5 class="card-title">Users transactions-profit</h5>
+            </div>
+        </div>
+        </div>
+
+
+
+    <script type="text/javascript">
+
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(drawCharts);
+
+        function drawCharts() {
+            drawSingleChart({{ coins_popularity|safe }}, 'coins_popularity_chart');
+            drawSingleChart({{ city|safe }}, 'city_chart');
+            drawSingleChart({{ sexuality|safe }}, 'sexuality_chart');
+
+        }
+
+        function drawSingleChart(raw_data, id_of_chart) {
+            var data = google.visualization.arrayToDataTable(raw_data);
+            var options = {'width': 550, 'height': 400};
+            var chart = new google.visualization.PieChart(document.getElementById(id_of_chart));
+            chart.draw(data, options);
+        }
+    </script>
+
+{% endblock %}
