@@ -5,6 +5,7 @@ import json
 import os.path
 import zipfile
 
+import mpld3
 import pandas as pd
 import requests
 import yfinance as yf
@@ -57,12 +58,12 @@ def unify_all_price_files():
 
 
 def add_all_columns():
-    google_trends_data_collector()
-    add_column('google_trends')
-    list_of_stocks = ['GOLD', 'OIL', 'SNP', 'NDX', 'DG']
+    list_of_stocks = ['GOLD', 'OIL', 'SNP', 'NDX', 'DX-Y.NYB']
     for stock in list_of_stocks:
         get_finance_data(stock)
         add_column(stock)
+    google_trends_data_collector()
+    add_column('google_trends')
     add_indicator_columns()
 
 
@@ -91,8 +92,7 @@ def download_data_from_binance():
             changed = True
         date = date + datetime.timedelta(days=-1)
         path_to_zip_file = date.strftime('price_data_zip_files/20%y/BTCUSDT-6h-20%y-%m-%d.zip')
-    if changed:
-        unify_all_price_files.delay()
+    unify_all_price_files()
 
 
 def make_plots():
@@ -118,6 +118,14 @@ def make_plots():
     data = [['city', 'num_of_users']] + data
     context.update({'city': json.dumps(data)})
 
+    # city profit
+    user_df = df.groupby(['city']).sum()
+    user_df.insert(0, 'city', list(user_df.index.values))
+    user_df = user_df.loc[:, df.columns.intersection(['city', 'total_transaction'])]
+    data = user_df.to_numpy().tolist()
+    data = [['city', 'total_transaction']] + data
+    context.update({'city_profit': json.dumps(data)})
+
     # popular coin
     df = pd.DataFrame(list(Order.objects.all().values('source_currency_type')))
     df['count'] = 1
@@ -127,20 +135,27 @@ def make_plots():
     data = [['Coin', 'popularity']] + data
     context.update({'coins_popularity': json.dumps(data)})
 
+    # user clustering
+    context.update({'user_clustering': cluster_users_based_on_transaction_volume()})
+
     value = context
     cache_key = 'bi_dashboard_data'
     cache.set(cache_key, value)
 
 
-@shared_task
 def cluster_users_based_on_transaction_volume():
     df = pd.read_csv('exported_data/user_data.csv')
     df = df[['total_transaction', 'total_profit_or_loss']].copy()
     kmeans = KMeans(n_clusters=3).fit(df)
     centroids = kmeans.cluster_centers_
-    plt.scatter(df['total_transaction'], df['total_profit_or_loss'], c=kmeans.labels_.astype(float), s=50, alpha=0.5)
+    plots = plt.scatter(df['total_transaction'], df['total_profit_or_loss'], c=kmeans.labels_.astype(float), s=50, alpha=0.5)
     plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
-    plt.savefig('data/static/data/user_clustering.png')
+    plt.xlabel("total transaction (billion USDT)")
+    plt.ylabel("total profit (billion USDT)")
+    figure = plots.figure
+    mpld3.plugins.connect(figure)
+    plot_in_html = mpld3.fig_to_html(figure)
+    return plot_in_html
 
 
 def google_trends_data_collector():

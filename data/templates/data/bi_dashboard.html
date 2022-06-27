@@ -23,6 +23,15 @@
                 <h5 class="card-title">Users City</h5>
             </div>
         </div>
+        </div>
+    <div class="card-group">
+
+                <div class="card text-center">
+            <div id="city_profit_chart"></div>
+            <div class="card-body">
+                <h5 class="card-title">City's Profit (billion USDT)</h5>
+            </div>
+        </div>
 
 
         <div class="card text-center">
@@ -35,9 +44,9 @@
 
         <div class="card-group">
         <div class="card text-center">
-            <img src="{% static 'data/user_clustering.png' %}">
+            <div id="user_clustering">{{ user_clustering|safe }}</div>
             <div class="card-body">
-                <h5 class="card-title">Users transactions-profit</h5>
+                <h5 class="card-title">Users clustering</h5>
             </div>
         </div>
         </div>
@@ -52,8 +61,8 @@
         function drawCharts() {
             drawSingleChart({{ coins_popularity|safe }}, 'coins_popularity_chart');
             drawSingleChart({{ city|safe }}, 'city_chart');
+            drawSingleChart({{ city_profit|safe }}, 'city_profit_chart');
             drawSingleChart({{ sexuality|safe }}, 'sexuality_chart');
-
         }
 
         function drawSingleChart(raw_data, id_of_chart) {

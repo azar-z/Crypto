@@ -37,7 +37,7 @@ class User(AbstractUser, BaseModel):
         done_orders = self.orders.filter(status__endswith='D')
         return round(done_orders.aggregate(
             sum=Sum(F('source_currency_amount') * F('price'))
-        )['sum'] or 0, 2)
+        )['sum'] or 0, 2) // 10 ** 9
 
     def get_total_profit_or_loss(self):
         two_step_orders = self.orders.filter(previous_step=None).exclude(next_step=None)
@@ -45,7 +45,7 @@ class User(AbstractUser, BaseModel):
         total_profit_or_loss = 0
         for order in done_two_step_orders:
             total_profit_or_loss += order.get_profit_or_loss()[0]
-        return total_profit_or_loss
+        return total_profit_or_loss // 10 ** 9
 
     @classmethod
     def export_data(cls):

@@ -28,13 +28,6 @@ CELERY_BEAT_SCHEDULE = {
         },
     },
 
-    'cluster_users_based_on_transaction_volume': {
-        'task': 'data.tasks.cluster_users_based_on_transaction_volume',
-        'schedule': EXPORT_DATA_RATE,
-        'options': {
-            'expires': EXPORT_DATA_RATE / 2,
-        },
-    },
 
     ################################## market update tasks ###############################
 
