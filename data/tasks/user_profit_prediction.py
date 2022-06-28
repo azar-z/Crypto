@@ -1,16 +1,14 @@
 import pandas as pd
-from celery import shared_task
 from django.core.cache import cache
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import MinMaxScaler
 
 
-@shared_task
 def make_predictor_model():
     df = pd.read_csv('exported_data/user_data.csv')
     df = df.drop(['id', 'username', 'phone_number', 'national_code', 'address',
-                  'birthday', 'total_profit_or_loss', 'city'], axis=1)
+                  'birthday', 'total_profit_or_loss', 'city', 'total_transaction_b', 'total_profit_or_loss_b'], axis=1)
     x = df.drop('total_profit_or_loss_percent', axis=1)
     y = df['total_profit_or_loss_percent']
     x_train, x_test, y_train, y_test = train_test_split(x, y,

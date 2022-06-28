@@ -20,5 +20,6 @@ from data import views
 
 urlpatterns = [
     path('bi_dashboard/', views.bi_dashboard_view, name='bi_dashboard'),
-    path('prediction/', views.get_name, name='prediction'),
+    path('prediction/user/', views.predict_user_profit, name='prediction_user'),
+    path('prediction/btc/', views.PredictBTCPrice.as_view(), name='prediction_btc'),
 ]

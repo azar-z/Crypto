@@ -54,12 +54,12 @@
                             <a class="nav-link dropdown-toggle" href="#" id="recordsDropdown" role="button"
                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                data-bs-toggle="dropdown">
-                                Records
+                                Reports
                             </a>
                             <div class="dropdown-menu"
                                  aria-labelledby="recordsDropdown">
-                                <a class="dropdown-item" href="{% url 'django_table_record' %}">Django Table Record</a>
-                                <a class="dropdown-item" href="{% url 'html_record' %}">HTML Record</a>
+                                <a class="dropdown-item" href="{% url 'django_table_record' %}">Django Table Report</a>
+                                <a class="dropdown-item" href="{% url 'html_record' %}">HTML Report</a>
                             </div>
                         </li>
 
@@ -71,9 +71,17 @@
                             <a class="nav-link" href="{% url 'bi_dashboard' %}">BI Dashboard</a>
                         </li>
 
-                        <li class="nav-item {% if url_name == 'prediction' %}active{% endif %}">
-                            <a class="nav-link" href="{% url 'prediction' %}">Prediction</a>
-                        </li>
+                        <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="predictionDropdown" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Prediction
+                        </a>
+                        <div class="dropdown-menu"
+                             aria-labelledby="predictionDropdown">
+                            <a class="dropdown-item" href="{% url 'prediction_user' %}">User Profit</a>
+                            <a class="dropdown-item" href="{% url 'prediction_btc' %}">BTC Price</a>
+                        </div>
+                    </li>
                     {% endif %}
 
                 {% endif %}

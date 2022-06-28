@@ -1,0 +1,30 @@
+{% extends 'user/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} Prediction {% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <table class="table">
+      <thead class="thead-dark">
+    <tr>
+        <th colspan="4">Predicted BTC price for tomorrow:</th>
+    </tr>
+         <tr>
+        <th>Open</th>
+        <th>High</th>
+        <th>Low</th>
+        <th>Close</th>
+    </tr>
+      </thead>
+        <tr>
+        <td>{{ BTC_price_prediction.Open }} USDT</td>
+        <td>{{ BTC_price_prediction.High }} USDT</td>
+        <td>{{ BTC_price_prediction.Low }} USDT</td>
+        <td>{{ BTC_price_prediction.Close }} USDT</td>
+    </tr>
+    </table>
+{% endblock %}

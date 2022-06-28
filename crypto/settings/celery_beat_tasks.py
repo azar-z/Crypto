@@ -12,16 +12,16 @@ CELERY_BEAT_SCHEDULE = {
 
     ################################## export data ###############################
 
-    'export_user_data_task': {
-        'task': 'data.tasks.export_user_data_task',
+    'user_data_task': {
+        'task': 'data.tasks.user_data_task',
         'schedule': EXPORT_DATA_RATE,
         'options': {
             'expires': EXPORT_DATA_RATE / 2,
         },
     },
 
-    'download_data_from_binance': {
-        'task': 'data.tasks.download_data_from_binance',
+    'price_data_task': {
+        'task': 'data.tasks.price_data_task',
         'schedule': EXPORT_DATA_RATE,
         'options': {
             'expires': EXPORT_DATA_RATE / 2,

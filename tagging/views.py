@@ -18,6 +18,8 @@ class TagList(FilterView):
     paginate_by = 7
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def get_tag_texts(request):
     if is_ajax(request):
         term = request.GET.get('term')
